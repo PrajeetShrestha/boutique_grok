@@ -56,6 +56,7 @@ if (document.getElementById('measurement-form')) {
         };
 
         try {
+            console.log('Submitting form data:', submissionData);
             // Send data to the server via API
             const response = await fetch('/form', {
                 method: 'POST',
@@ -65,16 +66,23 @@ if (document.getElementById('measurement-form')) {
                 body: JSON.stringify(submissionData)
             });
 
+            console.log('API Response status:', response.status);
+            
             if (!response.ok) {
-                throw new Error('Failed to submit form');
+                const errorData = await response.json();
+                console.error('API Error:', errorData);
+                throw new Error(`Failed to submit form: ${errorData.message || 'Unknown error'}`);
             }
+
+            const responseData = await response.json();
+            console.log('API Success:', responseData);
 
             formData = submissionData; // Store for export
             alert('Form submitted successfully! Use the buttons below to export your data.');
             document.querySelector('.export-buttons').style.display = 'flex'; // Show export buttons
         } catch (error) {
-            console.error('Error submitting form:', error);
-            alert('An error occurred while submitting the form. Please try again.');
+            console.error('Form submission error:', error);
+            alert(`An error occurred while submitting the form: ${error.message}`);
         }
     });
 

@@ -3,7 +3,7 @@
     <section class="measurement-form">
         <h1>Measurement Form</h1>
         <p>Please enter your details and measurements below to help us tailor your clothing perfectly.</p>
-        <form id="measurement-form" method="POST" action="/form">
+        <form id="measurement-form">
             <!-- Customer Details -->
             <h2>Customer Details</h2>
             <div class="form-row">
@@ -92,12 +92,10 @@
             </div>
             <button type="submit" class="btn">Submit Measurements</button>
         </form>
-        <% if (formData ) { %>
-            <div class="export-buttons">
-                <button id="export-email" class="btn">Export to Email</button>
-                <button id="export-pdf" class="btn">Export to PDF</button>
-            </div>
-        <% } %>
+        <div class="export-buttons" style="display: none;">
+            <button id="export-email" class="btn">Export to Email</button>
+            <button id="export-pdf" class="btn">Export to PDF</button>
+        </div>
     </section>
 </main>
 <%- include('partials/footer') %>

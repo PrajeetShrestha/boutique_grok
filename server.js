@@ -52,11 +52,27 @@ app.get('/', (req, res) => {
 app.get('/products', (req, res) => {
     const itemsPerPage = 20;
     const page = parseInt(req.query.page) || 1;
-    const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const paginatedProducts = products.slice(start, end);
-    const totalPages = Math.ceil(products.length / itemsPerPage);
-    res.render('products', { products: paginatedProducts, page, totalPages });
+    const offset = (page - 1) * itemsPerPage;
+
+    // Get total count of products
+    db.get('SELECT COUNT(*) as total FROM products', [], (err, row) => {
+        if (err) {
+            console.error('Error counting products:', err.message);
+            return res.status(500).send('Error fetching products');
+        }
+
+        const totalProducts = row.total;
+        const totalPages = Math.ceil(totalProducts / itemsPerPage);
+
+        // Get paginated products
+        db.all('SELECT * FROM products LIMIT ? OFFSET ?', [itemsPerPage, offset], (err, products) => {
+            if (err) {
+                console.error('Error fetching products:', err.message);
+                return res.status(500).send('Error fetching products');
+            }
+            res.render('products', { products, page, totalPages });
+        });
+    });
 });
 
 app.get('/blog', (req, res) => {
@@ -79,47 +95,104 @@ app.get('/form', (req, res) => {
 });
 
 app.post('/form', (req, res) => {
-    const orderDate = new Date().toLocaleString();
+    console.log('Form submission received:', req.body);
+
+    // Use the request body directly as it matches our expected structure
     const formData = {
-        customer: {
-            fullName: req.body['full-name'],
-            address: req.body.address,
-            deliveryDate: req.body['delivery-date']
-        },
-        blouse: {
-            length: parseFloat(req.body['blouse-length']),
-            chest: parseFloat(req.body.chest),
-            waist: parseFloat(req.body.waist),
-            frontNeck: parseFloat(req.body['front-neck']),
-            backNeck: parseFloat(req.body['back-neck']),
-            shoulder: parseFloat(req.body.shoulder),
-            sleevesLength: parseFloat(req.body['sleeves-length']),
-            sleevesRound: parseFloat(req.body['sleeves-round']),
-            armHole: parseFloat(req.body['arm-hole'])
-        },
-        lehenga: {
-            length: parseFloat(req.body['lehenga-length']),
-            waist: parseFloat(req.body['lehenga-waist'])
-        },
+        customer: req.body.customer,
+        blouse: req.body.blouse,
+        lehenga: req.body.lehenga,
         unit: req.body.unit,
-        orderDate: orderDate
+        orderDate: req.body.orderDate
     };
 
-    // Insert into SQLite
+    // Validation rules
+    const validationRules = {
+        customer: {
+            fullName: (val) => val && val.length >= 2 && val.length <= 100,
+            address: (val) => val && val.length >= 5 && val.length <= 200,
+            deliveryDate: (val) => val && new Date(val) > new Date()
+        },
+        measurements: {
+            inches: { min: 1, max: 100 },
+            cm: { min: 0, max: 254 }
+        }
+    };
+
+    // Validate customer details
+    const customerErrors = [];
+    Object.entries(formData.customer).forEach(([field, value]) => {
+        if (!validationRules.customer[field](value)) {
+            customerErrors.push(`Invalid ${field}`);
+        }
+    });
+
+    // Validate unit
+    if (!['inches', 'cm'].includes(formData.unit)) {
+        return res.status(400).json({ message: 'Invalid measurement unit' });
+    }
+
+    // Validate measurements
+    const { min, max } = validationRules.measurements[formData.unit];
+    const measurementErrors = [];
+
+    // Validate blouse measurements
+    Object.entries(formData.blouse).forEach(([field, value]) => {
+        if (isNaN(value) || value < min || value > max) {
+            measurementErrors.push(`Invalid blouse ${field}`);
+        }
+    });
+
+    // Validate lehenga measurements
+    Object.entries(formData.lehenga).forEach(([field, value]) => {
+        if (isNaN(value) || value < min || value > max) {
+            measurementErrors.push(`Invalid lehenga ${field}`);
+        }
+    });
+
+    // If there are any validation errors, return them
+    if (customerErrors.length > 0 || measurementErrors.length > 0) {
+        return res.status(400).json({
+            message: 'Validation failed',
+            errors: {
+                customer: customerErrors,
+                measurements: measurementErrors
+            }
+        });
+    }
+
+    // If validation passes, proceed with database insertion
     const sql = `INSERT INTO orders (fullName, address, deliveryDate, unit, blouseLength, chest, waist, frontNeck, backNeck, shoulder, sleevesLength, sleevesRound, armHole, lehengaLength, lehengaWaist, orderDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const params = [
-        formData.customer.fullName, formData.customer.address, formData.customer.deliveryDate, formData.unit,
-        formData.blouse.length, formData.blouse.chest, formData.blouse.waist, formData.blouse.frontNeck,
-        formData.blouse.backNeck, formData.blouse.shoulder, formData.blouse.sleevesLength, formData.blouse.sleevesRound,
-        formData.blouse.armHole, formData.lehenga.length, formData.lehenga.waist, formData.orderDate
+        formData.customer.fullName,
+        formData.customer.address,
+        formData.customer.deliveryDate,
+        formData.unit,
+        formData.blouse.length,
+        formData.blouse.chest,
+        formData.blouse.waist,
+        formData.blouse.frontNeck,
+        formData.blouse.backNeck,
+        formData.blouse.shoulder,
+        formData.blouse.sleevesLength,
+        formData.blouse.sleevesRound,
+        formData.blouse.armHole,
+        formData.lehenga.length,
+        formData.lehenga.waist,
+        formData.orderDate
     ];
-    
+
     db.run(sql, params, function(err) {
         if (err) {
-            console.error('Error inserting order:', err.message);
-            return res.status(500).send('Error saving order');
+            console.error('Database error:', err);
+            return res.status(500).json({ message: `Error saving order: ${err.message}` });
         }
-        res.render('form', { formData });
+        console.log('Order saved successfully with ID:', this.lastID);
+        res.status(200).json({ 
+            message: 'Order saved successfully',
+            orderId: this.lastID,
+            data: formData
+        });
     });
 });
 
