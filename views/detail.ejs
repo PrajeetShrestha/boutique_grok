@@ -1,17 +1,27 @@
 <%- include('partials/header') %>
 <main>
-    <section class="product-detail" id="product-detail">
-        <h1><%= product.name %></h1>
-        <div class="product-gallery" id="product-gallery">
-            <img src="<%= product.img %>" alt="<%= product.name %>">
-            <img src="https://picsum.photos/id/<%= product.id + 1 %>/300/533" alt="<%= product.name %> View 2">
-            <img src="https://picsum.photos/id/<%= product.id + 2 %>/300/533" alt="<%= product.name %> View 3">
+    <section class="product-detail">
+        <div class="product-detail__gallery">
+            <div class="product-detail__main-image">
+                <img id="main-image" src="<%= product.img %>" alt="<%= product.name %>">
+            </div>
+            <div class="product-detail__thumbnails">
+                <img src="<%= product.img %>" alt="<%= product.name %> Thumbnail 1" data-full="<%= product.img %>" class="product-detail__thumbnail product-detail__thumbnail--active">
+                <img src="https://picsum.photos/id/<%= product.id + 1 %>/300/533" alt="<%= product.name %> Thumbnail 2" data-full="https://picsum.photos/id/<%= product.id + 1 %>/300/533" class="product-detail__thumbnail">
+                <img src="https://picsum.photos/id/<%= product.id + 2 %>/300/533" alt="<%= product.name %> Thumbnail 3" data-full="https://picsum.photos/id/<%= product.id + 2 %>/300/533" class="product-detail__thumbnail">
+            </div>
         </div>
-        <p>$<%= product.price.toFixed(2) %></p>
-        <p>Color: <%= product.color %></p>
-        <p>Fabric: <%= product.fabric %></p>
-        <p><%= product.description %></p>
-        <a href="/products" class="btn">Back to Products</a>
+        <div class="product-detail__info">
+            <h1 class="product-detail__title"><%= product.name %></h1>
+            <p class="product-detail__price">$<%= product.price.toFixed(2) %></p>
+            <div class="product-detail__attributes">
+                <p><span>Color:</span> <%= product.color %></p>
+                <p><span>Fabric:</span> <%= product.fabric %></p>
+            </div>
+            <p class="product-detail__description"><%= product.description %></p>
+            <a href="/products" class="btn product-detail__btn">Back to Collection</a>
+        </div>
     </section>
 </main>
 <%- include('partials/footer') %>
+<script src="/js/script.js"></script>

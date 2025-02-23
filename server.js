@@ -1,10 +1,10 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = process.env.PORT || 3000;
 const dbService = require('./services/dbService');
+require('dotenv').config();
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -43,8 +43,16 @@ app.get('/products', (req, res) => {
     const itemsPerPage = 20;
     const page = parseInt(req.query.page) || 1;
     const offset = (page - 1) * itemsPerPage;
+    const searchQuery = req.query.search || '';
 
-    db.get('SELECT COUNT(*) as total FROM products', [], (err, row) => {
+    let sql = 'SELECT COUNT(*) as total FROM products';
+    let params = [];
+    if (searchQuery) {
+        sql += ' WHERE name LIKE ? OR description LIKE ?';
+        params = [`%${searchQuery}%`, `%${searchQuery}%`];
+    }
+
+    db.get(sql, params, (err, row) => {
         if (err) {
             console.error('Error counting products:', err.message);
             return res.status(500).send('Error fetching products');
@@ -53,7 +61,14 @@ app.get('/products', (req, res) => {
         const totalProducts = row.total;
         const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
-        db.all('SELECT * FROM products LIMIT ? OFFSET ?', [itemsPerPage, offset], (err, products) => {
+        sql = 'SELECT * FROM products';
+        if (searchQuery) {
+            sql += ' WHERE name LIKE ? OR description LIKE ?';
+        }
+        sql += ' LIMIT ? OFFSET ?';
+        params = searchQuery ? [`%${searchQuery}%`, `%${searchQuery}%`, itemsPerPage, offset] : [itemsPerPage, offset];
+
+        db.all(sql, params, (err, products) => {
             if (err) {
                 console.error('Error fetching products:', err.message);
                 return res.status(500).send('Error fetching products');
@@ -84,7 +99,10 @@ app.get('/detail', (req, res) => {
 });
 
 app.get('/form', (req, res) => {
-    res.render('form', { formData: null, currentRoute: '/form' });
+    res.render('form', { 
+        formData: null, 
+        currentRoute: '/form'
+    });
 });
 
 app.post('/form', (req, res) => {
@@ -181,11 +199,17 @@ app.post('/form', (req, res) => {
             return res.status(500).json({ message: `Error saving order: ${err.message}` });
         }
         console.log('Order saved successfully with ID:', this.lastID);
-        res.status(200).json({ 
-            message: 'Order saved successfully',
-            orderId: this.lastID,
-            data: formData
-        });
+        res.redirect(`/order-confirmation?id=${this.lastID}`);
+    });
+});
+
+app.get('/order-confirmation', (req, res) => {
+    const orderId = parseInt(req.query.id);
+    db.get('SELECT * FROM orders WHERE id = ?', [orderId], (err, order) => {
+        if (err || !order) {
+            return res.status(404).send('Order not found');
+        }
+        res.render('order-confirmation', { order, currentRoute: '/orders' });
     });
 });
 

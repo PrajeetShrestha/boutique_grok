@@ -4,90 +4,86 @@
         <h1>Measurement Form</h1>
         <p>Please enter your details and measurements below to help us tailor your clothing perfectly.</p>
         <form id="measurement-form">
-            <!-- Customer Details -->
             <h2>Customer Details</h2>
             <div class="form-row">
                 <div class="form-group">
                     <label for="full-name">Full Name:</label>
-                    <input type="text" id="full-name" name="full-name" required>
+                    <input type="text" id="full-name" name="full-name" value="<%= formData && formData.customer ? formData.customer.fullName : '' %>" required>
                 </div>
                 <div class="form-group">
                     <label for="delivery-date">Delivery Date:</label>
-                    <input type="date" id="delivery-date" name="delivery-date" required>
+                    <input type="date" id="delivery-date" name="delivery-date" value="<%= formData && formData.customer ? formData.customer.deliveryDate : '' %>" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="address">Address:</label>
-                    <textarea id="address" name="address" rows="3" required></textarea>
+                    <textarea id="address" name="address" rows="3" required><%= formData && formData.customer ? formData.customer.address : '' %></textarea>
                 </div>
             </div>
-            <!-- Unit Selector -->
             <div class="form-group">
                 <label>Unit of Measurement:</label>
                 <div class="unit-selector">
-                    <label><input type="radio" name="unit" value="inches" checked> Inches</label>
-                    <label><input type="radio" name="unit" value="cm"> Centimeters</label>
+                    <label><input type="radio" name="unit" value="inches" <%= (!formData || (formData && formData.unit === 'inches')) ? 'checked' : '' %>> Inches</label>
+                    <label><input type="radio" name="unit" value="cm" <%= formData && formData.unit === 'cm' ? 'checked' : '' %>> Centimeters</label>
                 </div>
             </div>
-            <!-- Blouse Measurements -->
             <h2>Blouse Measurements</h2>
             <div class="form-row">
                 <div class="form-group">
                     <label for="blouse-length">Length:</label>
-                    <input type="number" id="blouse-length" name="blouse-length" step="0.1" min="0" required>
+                    <input type="number" id="blouse-length" name="blouse-length" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.length : '' %>" required>
                 </div>
                 <div class="form-group">
                     <label for="chest">Chest:</label>
-                    <input type="number" id="chest" name="chest" step="0.1" min="0" required>
+                    <input type="number" id="chest" name="chest" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.chest : '' %>" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="waist">Waist:</label>
-                    <input type="number" id="waist" name="waist" step="0.1" min="0" required>
+                    <input type="number" id="waist" name="waist" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.waist : '' %>" required>
                 </div>
                 <div class="form-group">
                     <label for="front-neck">Front Neck Depth:</label>
-                    <input type="number" id="front-neck" name="front-neck" step="0.1" min="0" required>
+                    <input type="number" id="front-neck" name="front-neck" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.frontNeck : '' %>" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="back-neck">Back Neck Depth:</label>
-                    <input type="number" id="back-neck" name="back-neck" step="0.1" min="0" required>
+                    <input type="number" id="back-neck" name="back-neck" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.backNeck : '' %>" required>
                 </div>
                 <div class="form-group">
                     <label for="shoulder">Shoulder Width:</label>
-                    <input type="number" id="shoulder" name="shoulder" step="0.1" min="0" required>
+                    <input type="number" id="shoulder" name="shoulder" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.shoulder : '' %>" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="sleeves-length">Sleeves Length:</label>
-                    <input type="number" id="sleeves-length" name="sleeves-length" step="0.1" min="0" required>
+                    <input type="number" id="sleeves-length" name="sleeves-length" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.sleevesLength : '' %>" required>
                 </div>
                 <div class="form-group">
                     <label for="sleeves-round">Sleeves Round:</label>
-                    <input type="number" id="sleeves-round" name="sleeves-round" step="0.1" min="0" required>
+                    <input type="number" id="sleeves-round" name="sleeves-round" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.sleevesRound : '' %>" required>
                 </div>
             </div>
             <div class="form-row">
                 <div class="form-group">
                     <label for="arm-hole">Arm Hole:</label>
-                    <input type="number" id="arm-hole" name="arm-hole" step="0.1" min="0" required>
+                    <input type="number" id="arm-hole" name="arm-hole" step="0.1" min="0" value="<%= formData && formData.blouse ? formData.blouse.armHole : '' %>" required>
                 </div>
             </div>
-            <!-- Lehenga Measurements -->
             <h2>Lehenga Measurements</h2>
             <div class="form-row">
                 <div class="form-group">
                     <label for="lehenga-length">Length:</label>
-                    <input type="number" id="lehenga-length" name="lehenga-length" step="0.1" min="0" required>
+                    <input type="number" id="lehenga-length" name="lehenga-length" step="0.1" min="0" value="<%= formData && formData.lehenga ? formData.lehenga.length : '' %>" required>
                 </div>
                 <div class="form-group">
                     <label for="lehenga-waist">Waist:</label>
-                    <input type="number" id="lehenga-waist" name="lehenga-waist" step="0.1" min="0" required>
+                    <input type="number" id="lehenga-waist" name="lehenga-waist" step="0.1" min="0" value="<%= formData && formData.lehenga ? formData.lehenga.waist : '' %>" required>
                 </div>
             </div>
             <button type="submit" class="btn">Submit Measurements</button>
@@ -99,7 +95,4 @@
     </section>
 </main>
 <%- include('partials/footer') %>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<% if (formData) { %>
-    <script type="text/json" id="form-data"><%= JSON.stringify(formData) %></script>
-<% } %>
+<script src="/js/script.js"></script>

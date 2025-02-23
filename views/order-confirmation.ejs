@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+<main>
+    <section class="orders-section">
+        <h1>Order Confirmation</h1>
+        <p>Thank you for your order! Here are your details:</p>
+        <div class="order-details">
+            <h2>Order #<%= order.id %></h2>
+            <p><strong>Full Name:</strong> <%= order.fullName %></p>
+            <p><strong>Address:</strong> <%= order.address %></p>
+            <p><strong>Delivery Date:</strong> <%= order.deliveryDate %></p>
+            <p><strong>Order Date:</strong> <%= order.orderDate %></p>
+            <h3>Measurements (<%= order.unit %>)</h3>
+            <p><strong>Blouse Length:</strong> <%= order.blouseLength %></p>
+            <p><strong>Chest:</strong> <%= order.chest %></p>
+            <p><strong>Waist:</strong> <%= order.waist %></p>
+            <p><strong>Front Neck:</strong> <%= order.frontNeck %></p>
+            <p><strong>Back Neck:</strong> <%= order.backNeck %></p>
+            <p><strong>Shoulder:</strong> <%= order.shoulder %></p>
+            <p><strong>Sleeves Length:</strong> <%= order.sleevesLength %></p>
+            <p><strong>Sleeves Round:</strong> <%= order.sleevesRound %></p>
+            <p><strong>Arm Hole:</strong> <%= order.armHole %></p>
+            <p><strong>Lehenga Length:</strong> <%= order.lehengaLength %></p>
+            <p><strong>Lehenga Waist:</strong> <%= order.lehengaWaist %></p>
+        </div>
+        <a href="/form" class="btn">Submit Another Order</a>
+    </section>
+</main>
+<%- include('partials/footer') %>
