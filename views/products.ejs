@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+<main>
+    <section class="products-section">
+        <h1>Our Collection</h1>
+        <div class="filters">
+            <select id="category-filter">
+                <option value="all">All Categories</option>
+                <option value="dresses">Dresses</option>
+                <option value="tops">Tops</option>
+                <option value="accessories">Accessories</option>
+            </select>
+            <select id="sort">
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name">Name: A-Z</option>
+            </select>
+        </div>
+        <div class="product-grid" id="product-grid">
+            <% products.forEach(product => { %>
+                <div class="product-card">
+                    <img src="<%= product.img %>" alt="<%= product.name %>">
+                    <h3><%= product.name %></h3>
+                    <p>$<%= product.price.toFixed(2) %></p>
+                </div>
+            <% }) %>
+        </div>
+        <div class="pagination" id="pagination">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a href="/products?page=<%= i %>" class="<%= i === page ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+        </div>
+    </section>
+</main>
+<%- include('partials/footer') %>
+<script src="/js/script.js"></script>

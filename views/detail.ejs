@@ -1,0 +1,17 @@
+<%- include('partials/header') %>
+<main>
+    <section class="product-detail" id="product-detail">
+        <h1><%= product.name %></h1>
+        <div class="product-gallery" id="product-gallery">
+            <img src="<%= product.img %>" alt="<%= product.name %>">
+            <img src="https://picsum.photos/id/<%= product.id + 1 %>/300/533" alt="<%= product.name %> View 2">
+            <img src="https://picsum.photos/id/<%= product.id + 2 %>/300/533" alt="<%= product.name %> View 3">
+        </div>
+        <p>$<%= product.price.toFixed(2) %></p>
+        <p>Color: <%= product.color %></p>
+        <p>Fabric: <%= product.fabric %></p>
+        <p><%= product.description %></p>
+        <a href="/products" class="btn">Back to Products</a>
+    </section>
+</main>
+<%- include('partials/footer') %>

@@ -1,9 +1,20 @@
-// Hamburger Menu Toggle
-document.querySelector('.hamburger').addEventListener('click', () => {
-    document.querySelector('.nav-links').classList.toggle('active');
-});
+const express = require('express');
+const path = require('path');
+const app = express();
+const port = 3000;
 
-// Product Data (Static for now, replace with API or backend later)
+// Middleware to parse form data
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Serve static files (CSS, JS, images)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Sample product data (from your script.js)
 const products = [
     { id: 1, name: "Silk Dress", category: "dresses", price: 89.99, img: "https://picsum.photos/id/1/300/533", color: "Red", fabric: "Silk", description: "Elegant silk dress perfect for evening wear." },
     { id: 2, name: "Cotton Top", category: "tops", price: 29.99, img: "https://picsum.photos/id/2/300/533", color: "White", fabric: "Cotton", description: "Light and breathable cotton top for casual days." },
@@ -107,261 +118,69 @@ const products = [
     { id: 100, name: "Kimono Top", category: "tops", price: 39.99, img: "https://picsum.photos/id/100/300/533", color: "Multicolor", fabric: "Polyester", description: "Flowy kimono top for a boho touch." }
 ];
 
-const itemsPerPage = 20;
-let currentPage = 1;
+// Routes
+app.get('/', (req, res) => {
+    res.render('index');
+});
 
-// Render Products
-function renderProducts(filteredProducts, page) {
-    const productGrid = document.getElementById('product-grid');
-    if (!productGrid) return;
-
-    productGrid.innerHTML = '';
+app.get('/products', (req, res) => {
+    const itemsPerPage = 20;
+    const page = parseInt(req.query.page) || 1;
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    const paginatedProducts = filteredProducts.slice(start, end);
-
-    paginatedProducts.forEach(product => {
-        const card = document.createElement('div');
-        card.classList.add('product-card');
-        card.innerHTML = `
-            <img src="${product.img}" alt="${product.name}">
-            <h3>${product.name}</h3>
-            <p>$${product.price.toFixed(2)}</p>
-        `;
-        card.addEventListener('click', () => {
-            window.location.href = `detail.html?id=${product.id}`;
-        });
-        productGrid.appendChild(card);
-    });
-
-    renderPagination(filteredProducts.length);
-}
-
-// Render Pagination
-function renderPagination(totalItems) {
-    const pagination = document.getElementById('pagination');
-    if (!pagination) return;
-
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    pagination.innerHTML = '';
-
-    for (let i = 1; i <= totalPages; i++) {
-        const button = document.createElement('button');
-        button.textContent = i;
-        if (i === currentPage) button.classList.add('active');
-        button.addEventListener('click', () => {
-            currentPage = i;
-            filterAndSortProducts();
-        });
-        pagination.appendChild(button);
-    }
-}
-
-// Filter and Sort Products
-function filterAndSortProducts() {
-    const category = document.getElementById('category-filter')?.value || 'all';
-    const sort = document.getElementById('sort')?.value || 'price-asc';
-
-    let filteredProducts = [...products];
-    if (category !== 'all') {
-        filteredProducts = filteredProducts.filter(p => p.category === category);
-    }
-
-    if (sort === 'price-asc') {
-        filteredProducts.sort((a, b) => a.price - b.price);
-    } else if (sort === 'price-desc') {
-        filteredProducts.sort((a, b) => b.price - a.price);
-    } else if (sort === 'name') {
-        filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    renderProducts(filteredProducts, currentPage);
-}
-
-// Event Listeners for Filters and Sorting
-document.getElementById('category-filter')?.addEventListener('change', () => {
-    currentPage = 1;
-    filterAndSortProducts();
-});
-document.getElementById('sort')?.addEventListener('change', () => {
-    currentPage = 1;
-    filterAndSortProducts();
+    const paginatedProducts = products.slice(start, end);
+    const totalPages = Math.ceil(products.length / itemsPerPage);
+    res.render('products', { products: paginatedProducts, page, totalPages });
 });
 
-// Detail Page Logic
-function renderProductDetail() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = parseInt(urlParams.get('id'));
+app.get('/blog', (req, res) => {
+    res.render('blog');
+});
+
+app.get('/about', (req, res) => {
+    res.render('about');
+});
+
+app.get('/detail', (req, res) => {
+    const productId = parseInt(req.query.id);
     const product = products.find(p => p.id === productId);
+    if (!product) return res.status(404).send('Product not found');
+    res.render('detail', { product });
+});
 
-    if (!product) return;
+app.get('/form', (req, res) => {
+    res.render('form', { formData: null });
+});
 
-    document.getElementById('product-name').textContent = product.name;
-    document.getElementById('product-price').textContent = `$${product.price.toFixed(2)}`;
-    document.getElementById('product-color').textContent = `Color: ${product.color}`;
-    document.getElementById('product-fabric').textContent = `Fabric: ${product.fabric}`;
-    document.getElementById('product-description').textContent = product.description;
+app.post('/form', (req, res) => {
+    const orderDate = new Date().toLocaleString();
+    const formData = {
+        customer: {
+            fullName: req.body['full-name'],
+            address: req.body.address,
+            deliveryDate: req.body['delivery-date']
+        },
+        blouse: {
+            length: req.body['blouse-length'],
+            chest: req.body.chest,
+            waist: req.body.waist,
+            frontNeck: req.body['front-neck'],
+            backNeck: req.body['back-neck'],
+            shoulder: req.body.shoulder,
+            sleevesLength: req.body['sleeves-length'],
+            sleevesRound: req.body['sleeves-round'],
+            armHole: req.body['arm-hole']
+        },
+        lehenga: {
+            length: req.body['lehenga-length'],
+            waist: req.body['lehenga-waist']
+        },
+        unit: req.body.unit,
+        orderDate: orderDate
+    };
+    res.render('form', { formData }); // Re-render form with submitted data
+});
 
-    const gallery = document.getElementById('product-gallery');
-    gallery.innerHTML = '';
-    // Simulate additional images using Picsum by offsetting the ID
-    for (let i = 0; i < 3; i++) {
-        const img = document.createElement('img');
-        img.src = `https://picsum.photos/id/${product.id + i}/300/533`;
-        img.alt = `${product.name} View ${i + 1}`;
-        gallery.appendChild(img);
-    }
-}
-
-// Initial Render
-if (document.getElementById('product-grid')) {
-    filterAndSortProducts();
-} else if (document.getElementById('product-detail')) {
-    renderProductDetail();
-}
-
-// Measurement Form Submission
-if (document.getElementById('measurement-form')) {
-    let formData = null;
-
-    document.getElementById('measurement-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const orderDate = new Date().toLocaleString();
-        const unit = document.querySelector('input[name="unit"]:checked').value;
-        formData = {
-            customer: {
-                fullName: document.getElementById('full-name').value,
-                address: document.getElementById('address').value,
-                deliveryDate: document.getElementById('delivery-date').value
-            },
-            blouse: {
-                length: document.getElementById('blouse-length').value,
-                chest: document.getElementById('chest').value,
-                waist: document.getElementById('waist').value,
-                frontNeck: document.getElementById('front-neck').value,
-                backNeck: document.getElementById('back-neck').value,
-                shoulder: document.getElementById('shoulder').value,
-                sleevesLength: document.getElementById('sleeves-length').value,
-                sleevesRound: document.getElementById('sleeves-round').value,
-                armHole: document.getElementById('arm-hole').value
-            },
-            lehenga: {
-                length: document.getElementById('lehenga-length').value,
-                waist: document.getElementById('lehenga-waist').value
-            },
-            unit: unit,
-            orderDate: orderDate
-        };
-        alert('Form submitted! Use the buttons below to export your data.');
-    });
-
-    // Export to Email (Plain Text)
-    document.getElementById('export-email').addEventListener('click', () => {
-        if (!formData) {
-            alert('Please submit the form first!');
-            return;
-        }
-        const textContent = `
-Boutique Order Details
-----------------------------------------
-
-Customer Information
-----------------------------------------
-Full Name: ${formData.customer.fullName}
-Address:
-${formData.customer.address}
-Delivery Date: ${formData.customer.deliveryDate}
-Order Date: ${formData.orderDate}
-
-Measurements (${formData.unit})
-----------------------------------------
-Blouse
-----------------------------------------
-Length: ${formData.blouse.length}
-Chest: ${formData.blouse.chest}
-Waist: ${formData.blouse.waist}
-Front Neck Depth: ${formData.blouse.frontNeck}
-Back Neck Depth: ${formData.blouse.backNeck}
-Shoulder Width: ${formData.blouse.shoulder}
-Sleeves Length: ${formData.blouse.sleevesLength}
-Sleeves Round: ${formData.blouse.sleevesRound}
-Arm Hole: ${formData.blouse.armHole}
-
-Lehenga
-----------------------------------------
-Length: ${formData.lehenga.length}
-Waist: ${formData.lehenga.waist}
-
-----------------------------------------
-© 2025 Boutique
-        `;
-        const subject = encodeURIComponent(`Order Measurements for ${formData.customer.fullName}`);
-        const body = encodeURIComponent(textContent);
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    });
-
-    // Export to PDF (Remains Professional)
-    document.getElementById('export-pdf').addEventListener('click', () => {
-        if (!formData) {
-            alert('Please submit the form first!');
-            return;
-        }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        // Header
-        doc.setFontSize(18);
-        doc.setTextColor(51, 51, 51); // #333
-        doc.text('Boutique Order Details', 105, 15, { align: 'center' });
-        doc.setLineWidth(0.5);
-        doc.line(10, 20, 200, 20); // Horizontal line
-
-        // Customer Details
-        doc.setFontSize(14);
-        doc.setTextColor(85, 85, 85); // #555
-        doc.text('Customer Information', 10, 30);
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0); // Black
-        doc.text(`Full Name: ${formData.customer.fullName}`, 10, 40);
-        doc.text('Address:', 10, 50);
-        doc.text(formData.customer.address, 10, 55, { maxWidth: 180 });
-        let yOffset = 55 + Math.ceil(formData.customer.address.length / 90) * 5; // Adjust for address length
-        doc.text(`Delivery Date: ${formData.customer.deliveryDate}`, 10, yOffset + 10);
-        doc.text(`Order Date: ${formData.orderDate}`, 10, yOffset + 20);
-
-        // Measurements
-        yOffset += 30;
-        doc.setFontSize(14);
-        doc.setTextColor(85, 85, 85); // #555
-        doc.text(`Measurements (${formData.unit})`, 10, yOffset);
-        doc.setFontSize(12);
-        doc.setTextColor(119, 119, 119); // #777
-        doc.text('Blouse', 10, yOffset + 10);
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Length: ${formData.blouse.length}`, 10, yOffset + 20);
-        doc.text(`Chest: ${formData.blouse.chest}`, 10, yOffset + 30);
-        doc.text(`Waist: ${formData.blouse.waist}`, 10, yOffset + 40);
-        doc.text(`Front Neck Depth: ${formData.blouse.frontNeck}`, 10, yOffset + 50);
-        doc.text(`Back Neck Depth: ${formData.blouse.backNeck}`, 10, yOffset + 60);
-        doc.text(`Shoulder Width: ${formData.blouse.shoulder}`, 10, yOffset + 70);
-        doc.text(`Sleeves Length: ${formData.blouse.sleevesLength}`, 10, yOffset + 80);
-        doc.text(`Sleeves Round: ${formData.blouse.sleevesRound}`, 10, yOffset + 90);
-        doc.text(`Arm Hole: ${formData.blouse.armHole}`, 10, yOffset + 100);
-
-        doc.setFontSize(12);
-        doc.setTextColor(119, 119, 119); // #777
-        doc.text('Lehenga', 10, yOffset + 110);
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Length: ${formData.lehenga.length}`, 10, yOffset + 120);
-        doc.text(`Waist: ${formData.lehenga.waist}`, 10, yOffset + 130);
-
-        // Footer
-        doc.setFontSize(8);
-        doc.setTextColor(119, 119, 119); // #777
-        doc.text('© 2025 Boutique', 105, 290, { align: 'center' });
-
-        doc.save(`Order_${formData.customer.fullName}_${formData.orderDate.replace(/[, :]/g, '_')}.pdf`);
-    });
-}
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+});
