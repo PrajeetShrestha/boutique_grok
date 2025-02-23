@@ -11,6 +11,17 @@ document.getElementById('sort')?.addEventListener('change', () => {
     filterAndSortProducts();
 });
 
+// Product Card Click Handler
+document.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent default link behavior
+        const productId = card.getAttribute('data-id');
+        if (productId) {
+            window.location.href = `/detail?id=${productId}`; // Navigate to detail view
+        }
+    });
+});
+
 function filterAndSortProducts() {
     // Placeholder: Server-side rendering handles this now
     // For client-side, you'd fetch updated products from an API endpoint
@@ -24,12 +35,10 @@ if (document.getElementById('measurement-form')) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Collect form data
         const formInputs = new FormData(form);
         const data = Object.fromEntries(formInputs.entries());
         const orderDate = new Date().toLocaleString();
 
-        // Structure the data for the API
         const submissionData = {
             customer: {
                 fullName: data['full-name'],
@@ -57,7 +66,6 @@ if (document.getElementById('measurement-form')) {
 
         try {
             console.log('Submitting form data:', submissionData);
-            // Send data to the server via API
             const response = await fetch('/form', {
                 method: 'POST',
                 headers: {
@@ -71,15 +79,22 @@ if (document.getElementById('measurement-form')) {
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('API Error:', errorData);
-                throw new Error(`Failed to submit form: ${errorData.message || 'Unknown error'}`);
+                // Improved error message with validation details
+                let errorMsg = errorData.message || 'Unknown error';
+                if (errorData.errors) {
+                    const customerErrors = errorData.errors.customer?.join(', ') || '';
+                    const measurementErrors = errorData.errors.measurements?.join(', ') || '';
+                    errorMsg += `\nCustomer Errors: ${customerErrors || 'None'}\nMeasurement Errors: ${measurementErrors || 'None'}`;
+                }
+                throw new Error(errorMsg);
             }
 
             const responseData = await response.json();
             console.log('API Success:', responseData);
 
-            formData = submissionData; // Store for export
+            formData = responseData.data; // Use server-returned data
             alert('Form submitted successfully! Use the buttons below to export your data.');
-            document.querySelector('.export-buttons').style.display = 'flex'; // Show export buttons
+            document.querySelector('.export-buttons').style.display = 'flex';
         } catch (error) {
             console.error('Form submission error:', error);
             alert(`An error occurred while submitting the form: ${error.message}`);

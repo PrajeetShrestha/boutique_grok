@@ -1,8 +1,10 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = process.env.PORT || 3000;
+const dbService = require('./services/dbService');
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -13,40 +15,28 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Ensure app/data directory exists before we can use dbService
+const dataDir = path.join(__dirname, 'app/data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+    console.log('Created app/data directory');
+}
+
 // SQLite Database Setup
 const dbPath = path.join(__dirname, 'app/data', 'boutique.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error opening database:', err.message);
-    } else {
-        console.log('Connected to SQLite database');
-        db.run(`CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fullName TEXT NOT NULL,
-            address TEXT NOT NULL,
-            deliveryDate TEXT NOT NULL,
-            unit TEXT NOT NULL,
-            blouseLength REAL NOT NULL,
-            chest REAL NOT NULL,
-            waist REAL NOT NULL,
-            frontNeck REAL NOT NULL,
-            backNeck REAL NOT NULL,
-            shoulder REAL NOT NULL,
-            sleevesLength REAL NOT NULL,
-            sleevesRound REAL NOT NULL,
-            armHole REAL NOT NULL,
-            lehengaLength REAL NOT NULL,
-            lehengaWaist REAL NOT NULL,
-            orderDate TEXT NOT NULL
-        )`, (err) => {
-            if (err) console.error('Error creating table:', err.message);
-        });
-    }
-});
+// Use db from dbService
+const db = dbService.db;
+dbService.initializeDatabase()
+    .then(() => {
+        console.log('Database initialized successfully');
+    })
+    .catch(err => {
+        console.error('Failed to initialize database:', err.message);
+    });
 
 // Routes
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', { currentRoute: '/' });
 });
 
 app.get('/products', (req, res) => {
@@ -54,7 +44,6 @@ app.get('/products', (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const offset = (page - 1) * itemsPerPage;
 
-    // Get total count of products
     db.get('SELECT COUNT(*) as total FROM products', [], (err, row) => {
         if (err) {
             console.error('Error counting products:', err.message);
@@ -64,34 +53,38 @@ app.get('/products', (req, res) => {
         const totalProducts = row.total;
         const totalPages = Math.ceil(totalProducts / itemsPerPage);
 
-        // Get paginated products
         db.all('SELECT * FROM products LIMIT ? OFFSET ?', [itemsPerPage, offset], (err, products) => {
             if (err) {
                 console.error('Error fetching products:', err.message);
                 return res.status(500).send('Error fetching products');
             }
-            res.render('products', { products, page, totalPages });
+            res.render('products', { products, page, totalPages, currentRoute: '/products' });
         });
     });
 });
 
 app.get('/blog', (req, res) => {
-    res.render('blog');
+    res.render('blog', { currentRoute: '/blog' });
 });
 
 app.get('/about', (req, res) => {
-    res.render('about');
+    res.render('about', { currentRoute: '/about' });
 });
 
 app.get('/detail', (req, res) => {
     const productId = parseInt(req.query.id);
-    const product = products.find(p => p.id === productId);
-    if (!product) return res.status(404).send('Product not found');
-    res.render('detail', { product });
+    db.get('SELECT * FROM products WHERE id = ?', [productId], (err, product) => {
+        if (err) {
+            console.error('Error fetching product:', err.message);
+            return res.status(500).send('Error fetching product');
+        }
+        if (!product) return res.status(404).send('Product not found');
+        res.render('detail', { product, currentRoute: '/products' }); // Detail is under Products
+    });
 });
 
 app.get('/form', (req, res) => {
-    res.render('form', { formData: null });
+    res.render('form', { formData: null, currentRoute: '/form' });
 });
 
 app.post('/form', (req, res) => {
@@ -196,14 +189,13 @@ app.post('/form', (req, res) => {
     });
 });
 
-// New Orders Page Route
 app.get('/orders', (req, res) => {
     db.all('SELECT * FROM orders ORDER BY orderDate DESC', [], (err, rows) => {
         if (err) {
             console.error('Error fetching orders:', err.message);
             return res.status(500).send('Error fetching orders');
         }
-        res.render('orders', { orders: rows });
+        res.render('orders', { orders: rows, currentRoute: '/orders' });
     });
 });
 

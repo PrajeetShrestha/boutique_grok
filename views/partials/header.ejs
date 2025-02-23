@@ -11,12 +11,12 @@
         <nav>
             <div class="logo">Boutique</div>
             <ul class="nav-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/products">Products</a></li>
-                <li><a href="/blog">Blog</a></li>
-                <li><a href="/about">About</a></li>
-                <li><a href="/form">Measurement Form</a></li>
-                <li><a href="/orders">Orders</a></li>
+                <li class="<%= currentRoute === '/' ? 'active' : '' %>"><a href="/">Home</a></li>
+                <li class="<%= currentRoute === '/products' ? 'active' : '' %>"><a href="/products">Products</a></li>
+                <li class="<%= currentRoute === '/blog' ? 'active' : '' %>"><a href="/blog">Blog</a></li>
+                <li class="<%= currentRoute === '/about' ? 'active' : '' %>"><a href="/about">About</a></li>
+                <li class="<%= currentRoute === '/form' ? 'active' : '' %>"><a href="/form">Measurement Form</a></li>
+                <li class="<%= currentRoute === '/orders' ? 'active' : '' %>"><a href="/orders">Orders</a></li>
             </ul>
             <div class="hamburger">☰</div>
         </nav>
