@@ -12,7 +12,17 @@ document.getElementById('sort')?.addEventListener('change', () => {
 });
 
 function filterAndSortProducts() {
-    // Add client-side logic if needed, or rely on server-side rendering
+    const productGrid = document.querySelector('.product-grid');
+    if (!productGrid) return;
+    
+    const products = Array.from(productGrid.querySelectorAll('.product-card'));
+    products.forEach(card => {
+        card.addEventListener('click', () => {
+            const productId = card.dataset.productId;
+            window.location.href = `/detail/${productId}`;
+        });
+        card.style.cursor = 'pointer';
+    });
 }
 
 // Form Export Logic

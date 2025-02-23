@@ -440,3 +440,46 @@ footer {
     outline: none;
     border-color: #333;
 }
+
+/* Orders Page */
+.orders-section {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.orders-section h1 {
+    margin-bottom: 2rem;
+}
+
+.order-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.order-list th, .order-list td {
+    padding: 1rem;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.order-list th {
+    background: #f9f9f9;
+    font-weight: 500;
+}
+
+.order-list td {
+    vertical-align: top;
+}
+
+@media (max-width: 768px) {
+    .order-list table {
+        font-size: 0.9rem;
+    }
+
+    .order-list th, .order-list td {
+        padding: 0.5rem;
+    }
+}
