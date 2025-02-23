@@ -1,0 +1,442 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    line-height: 1.6;
+    color: #333;
+    background: #f9f9f9;
+}
+
+header {
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+}
+
+.nav-links li {
+    margin-left: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.hamburger {
+    display: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: #333;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.btn:hover {
+    background: #555;
+}
+
+/* Home Page */
+.hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: url('../images/hero-bg.jpg') no-repeat center/cover;
+    color: #fff;
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Products Page */
+.products-section {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem; /* 2rem padding on each side */
+}
+
+.products-section h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+
+.filters select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Default: 4 columns filling space for >1200px */
+    gap: 2rem; /* Space between cards */
+}
+
+.product-card {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 450px; /* Space for portrait images */
+    width: 100%; /* Fill allocated grid space */
+}
+
+.product-card img {
+    width: 100%;
+    height: auto; /* Adjust height naturally */
+    aspect-ratio: 9 / 16; /* Portrait orientation */
+    max-height: 400px; /* Cap height */
+    object-fit: cover; /* Fill space without distortion */
+    border-radius: 5px;
+}
+
+.product-card h3 {
+    margin: 0.5rem 0;
+}
+
+.product-card p {
+    color: #777;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pagination button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.pagination button.active {
+    background: #333;
+    color: #fff;
+}
+
+/* Blog & About Pages */
+.blog-section, .about-section {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+
+.blog-section h1, .about-section h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+article {
+    margin-bottom: 2rem;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        padding: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-links li {
+        margin: 0.5rem 0;
+    }
+
+    .hamburger {
+        display: block;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+@media (max-width: 1200px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr); /* 4 columns filling space for 801-1200px */
+    }
+}
+
+@media (max-width: 800px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 columns filling space for 601-800px */
+    }
+}
+
+@media (max-width: 600px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns filling space for 433-600px */
+    }
+}
+
+@media (max-width: 432px) {
+    .product-grid {
+        grid-template-columns: 1fr; /* 1 column (full width) for ≤432px */
+    }
+
+    .product-card {
+        max-width: 100%; /* Explicit full width on narrow screens */
+    }
+}
+
+/* Product Detail Page */
+.product-detail {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.product-detail h1 {
+    margin-bottom: 1.5rem;
+}
+
+.product-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.product-gallery img {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.product-detail p {
+    margin: 0.5rem 0;
+}
+
+/* Responsive Design for Detail Page */
+@media (max-width: 768px) {
+    .product-gallery img {
+        max-width: 100%;
+    }
+}
+
+/* Measurement Form Page */
+.measurement-form {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.measurement-form h1 {
+    margin-bottom: 1.5rem;
+}
+
+.measurement-form p {
+    margin-bottom: 2rem;
+    color: #555;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: #fff;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #333;
+}
+/* Measurement Form Page */
+.measurement-form {
+    max-width: 800px; /* Increased to accommodate two columns */
+    margin: 2rem auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.measurement-form h1 {
+    margin-bottom: 1.5rem;
+}
+
+.measurement-form h2 {
+    margin: 2rem 0 1rem;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.measurement-form p {
+    margin-bottom: 2rem;
+    color: #555;
+}
+
+.unit-selector {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.unit-selector label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.unit-selector input[type="radio"] {
+    margin: 0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns of equal width */
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: #fff;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #333;
+}
+
+/* Responsive Design for Form */
+@media (max-width: 768px) {
+    .measurement-form {
+        padding: 0 1rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr; /* Stack fields on mobile */
+    }
+}
+
+.export-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: #fff;
+    resize: vertical;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: #333;
+}
