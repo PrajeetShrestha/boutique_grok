@@ -223,6 +223,38 @@ app.get('/orders', (req, res) => {
     });
 });
 
+// API endpoint for product details
+app.get('/api/products/:id', (req, res) => {
+    const productId = parseInt(req.params.id);
+    
+    if (isNaN(productId)) {
+        return res.status(400).json({ error: 'Invalid product ID' });
+    }
+
+    db.get('SELECT * FROM products WHERE id = ?', [productId], (err, product) => {
+        if (err) {
+            console.error('Error fetching product:', err.message);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.json(product);
+    });
+});
+
+// 404 Error Handler - Must be after all other routes
+app.use((req, res) => {
+    res.status(404);
+    // Check if the request accepts HTML
+    if (req.accepts('html')) {
+        res.render('404', { currentRoute: req.path });
+    } else {
+        // For API requests, send JSON
+        res.json({ error: 'Not found' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running at port ${port}`);
 });

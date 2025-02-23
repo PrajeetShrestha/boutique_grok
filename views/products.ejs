@@ -17,11 +17,11 @@
         </div>
         <div class="product-grid" id="product-grid">
             <% products.forEach(product => { %>
-                <a href="/detail?id=<%= product.id %>" class="product-card" data-id="<%= product.id %>">
+                <div class="product-card" data-id="<%= product.id %>">
                     <img src="<%= product.img %>" alt="<%= product.name %>">
                     <h3><%= product.name %></h3>
                     <p>$<%= product.price.toFixed(2) %></p>
-                </a>
+                </div>
             <% }) %>
         </div>
         <div class="pagination" id="pagination">
@@ -30,5 +30,6 @@
             <% } %>
         </div>
     </section>
+    <%- include('partials/product-modal') %>
 </main>
 <%- include('partials/footer') %>

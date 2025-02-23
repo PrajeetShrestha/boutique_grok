@@ -25,13 +25,68 @@ function filterAndSortProducts() {
     // Placeholder: Server-side rendering handles this now
 }
 
+// Modal functionality
+const modal = document.getElementById('product-modal');
+const closeModal = document.querySelector('.close-modal');
+
+// Close modal when clicking the close button or outside the modal
+closeModal?.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'block') {
+        modal.style.display = 'none';
+    }
+});
+
 // Product Card Click Handler
 document.querySelectorAll('.product-card').forEach(card => {
-    card.addEventListener('click', (e) => {
+    card.addEventListener('click', async (e) => {
         e.preventDefault();
         const productId = card.getAttribute('data-id');
         if (productId) {
-            window.location.href = `/detail?id=${productId}`;
+            try {
+                const response = await fetch(`/api/products/${productId}`);
+                const product = await response.json();
+                
+                // Update modal content
+                document.getElementById('modal-main-image').src = product.img;
+                document.getElementById('modal-title').textContent = product.name;
+                document.getElementById('modal-price').textContent = `$${product.price.toFixed(2)}`;
+                document.getElementById('modal-color').textContent = product.color;
+                document.getElementById('modal-fabric').textContent = product.fabric;
+                document.getElementById('modal-description').textContent = product.description;
+                
+                // Generate thumbnails
+                const thumbnailsContainer = document.getElementById('modal-thumbnails');
+                thumbnailsContainer.innerHTML = `
+                    <img src="${product.img}" alt="${product.name} Thumbnail 1" class="product-detail__thumbnail product-detail__thumbnail--active">
+                    <img src="https://picsum.photos/id/${product.id + 1}/300/533" alt="${product.name} Thumbnail 2" class="product-detail__thumbnail">
+                    <img src="https://picsum.photos/id/${product.id + 2}/300/533" alt="${product.name} Thumbnail 3" class="product-detail__thumbnail">
+                `;
+                
+                // Show modal
+                modal.style.display = 'block';
+                
+                // Add thumbnail click handlers
+                thumbnailsContainer.querySelectorAll('.product-detail__thumbnail').forEach(thumb => {
+                    thumb.addEventListener('click', () => {
+                        document.getElementById('modal-main-image').src = thumb.src;
+                        thumbnailsContainer.querySelector('.product-detail__thumbnail--active')?.classList.remove('product-detail__thumbnail--active');
+                        thumb.classList.add('product-detail__thumbnail--active');
+                    });
+                });
+            } catch (error) {
+                console.error('Error fetching product details:', error);
+            }
         }
     });
 });
