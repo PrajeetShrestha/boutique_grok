@@ -14,7 +14,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // SQLite Database Setup
-const dbPath = path.join(__dirname, 'data', 'boutique.db');
+const dbPath = path.join(__dirname, 'app/data', 'boutique.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
