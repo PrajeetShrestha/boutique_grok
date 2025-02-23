@@ -1,5 +1,6 @@
 // Hamburger Menu Toggle
-document.querySelector('.hamburger').addEventListener('click', () => {
+document.querySelector('.hamburger').addEventListener('click', (e) => {
+    e.preventDefault();
     const navLinks = document.querySelector('.nav-links');
     if (navLinks) {
         navLinks.classList.toggle('active');
@@ -7,10 +8,6 @@ document.querySelector('.hamburger').addEventListener('click', () => {
     } else {
         console.error('nav-links not found');
     }
-});
-
-window.addEventListener('scroll', () => {
-    document.querySelector('header').classList.toggle('scrolled', window.scrollY > 50);
 });
 
 // Client-side filtering and sorting (optional)
@@ -25,125 +22,178 @@ function filterAndSortProducts() {
     // Placeholder: Server-side rendering handles this now
 }
 
-// Modal functionality
-const modal = document.getElementById('product-modal');
-const closeModal = document.querySelector('.close-modal');
-
-// Close modal when clicking the close button or outside the modal
-closeModal?.addEventListener('click', () => {
-    modal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === modal) {
-        modal.style.display = 'none';
-    }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.style.display === 'block') {
-        modal.style.display = 'none';
-    }
-});
-
-// Product Card Click Handler
-document.querySelectorAll('.product-card').forEach(card => {
-    card.addEventListener('click', async (e) => {
+// Product Card Quick View Handler
+document.querySelectorAll('.product-card__quick-view').forEach(button => {
+    button.addEventListener('click', (e) => {
         e.preventDefault();
-        const productId = card.getAttribute('data-id');
+        const productId = button.getAttribute('data-id');
         if (productId) {
-            try {
-                const response = await fetch(`/api/products/${productId}`);
-                const product = await response.json();
-                
-                // Update modal content
-                document.getElementById('modal-main-image').src = product.img;
-                document.getElementById('modal-title').textContent = product.name;
-                document.getElementById('modal-price').textContent = `$${product.price.toFixed(2)}`;
-                document.getElementById('modal-color').textContent = product.color;
-                document.getElementById('modal-fabric').textContent = product.fabric;
-                document.getElementById('modal-description').textContent = product.description;
-                
-                // Generate thumbnails
-                const thumbnailsContainer = document.getElementById('modal-thumbnails');
-                thumbnailsContainer.innerHTML = `
-                    <img src="${product.img}" alt="${product.name} Thumbnail 1" class="product-detail__thumbnail product-detail__thumbnail--active">
-                    <img src="https://picsum.photos/id/${product.id + 1}/300/533" alt="${product.name} Thumbnail 2" class="product-detail__thumbnail">
-                    <img src="https://picsum.photos/id/${product.id + 2}/300/533" alt="${product.name} Thumbnail 3" class="product-detail__thumbnail">
-                `;
-                
-                // Show modal
-                modal.style.display = 'block';
-                
-                // Add thumbnail click handlers
-                thumbnailsContainer.querySelectorAll('.product-detail__thumbnail').forEach(thumb => {
-                    thumb.addEventListener('click', () => {
-                        document.getElementById('modal-main-image').src = thumb.src;
-                        thumbnailsContainer.querySelector('.product-detail__thumbnail--active')?.classList.remove('product-detail__thumbnail--active');
-                        thumb.classList.add('product-detail__thumbnail--active');
-                    });
-                });
-            } catch (error) {
-                console.error('Error fetching product details:', error);
-            }
+            fetch(`/detail?id=${productId}`)
+                .then(response => response.text())
+                .then(html => {
+                    const product = {
+                        id: productId,
+                        name: button.parentElement.querySelector('h3').textContent,
+                        price: button.parentElement.querySelector('p').textContent.replace('$', ''),
+                        img: button.parentElement.querySelector('img').src,
+                        color: 'N/A',
+                        fabric: 'N/A',
+                        description: 'Description placeholder'
+                    };
+                    showProductModal(product);
+                })
+                .catch(error => console.error('Error fetching product:', error));
         }
     });
 });
 
-// Infinite Carousel for Detail Page
-if (document.querySelector('.product-carousel')) {
-    const track = document.querySelector('.carousel-track');
-    const images = Array.from(track.children);
-    const prevButton = document.querySelector('.carousel-prev');
-    const nextButton = document.querySelector('.carousel-next');
-    let currentIndex = 0;
-    const imageWidth = images[0].getBoundingClientRect().width;
+// Product Detail Page Gallery
+if (document.querySelector('.product-detail-page__gallery')) {
+    const mainImage = document.getElementById('main-image');
+    const thumbnails = document.querySelectorAll('.product-detail-page__thumbnail');
 
-    images.forEach(img => {
-        const clone = img.cloneNode(true);
-        track.appendChild(clone);
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', () => {
+            mainImage.src = thumbnail.getAttribute('data-full');
+            thumbnails.forEach(t => t.classList.remove('product-detail-page__thumbnail--active'));
+            thumbnail.classList.add('product-detail-page__thumbnail--active');
+        });
     });
+    
 
-    function updateCarousel() {
-        track.style.transition = 'transform 0.5s ease';
-        track.style.transform = `translateX(-${currentIndex * imageWidth}px)`;
-    }
+    // Full-Screen Gallery Trigger
+    mainImage.addEventListener('click', () => {
+        if (mainImage.getAttribute('data-gallery') === 'true') {
 
-    track.addEventListener('transitionend', () => {
-        if (currentIndex >= images.length) {
-            track.style.transition = 'none';
-            currentIndex = 0;
-            track.style.transform = `translateX(0)`;
-        } else if (currentIndex < 0) {
-            track.style.transition = 'none';
-            currentIndex = images.length - 1;
-            track.style.transform = `translateX(-${currentIndex * imageWidth}px)`;
+            const images = Array.from(thumbnails).map(t => t.getAttribute('data-full'));
+  
+            showGalleryModal(images, mainImage.src);
         }
-    });
-
-    nextButton.addEventListener('click', () => {
-        currentIndex++;
-        updateCarousel();
-    });
-
-    prevButton.addEventListener('click', () => {
-        currentIndex--;
-        updateCarousel();
     });
 }
 
-// Form Submission and Export Logic
+// Product Modal Logic
+function showProductModal(product) {
+    console.log("Show")
+    const modal = document.getElementById('product-modal');
+    if (!modal) {
+        console.error('Product modal not found in DOM');
+        return;
+    }
+
+    document.getElementById('modal-main-image').src = product.img;
+    document.getElementById('modal-title').textContent = product.name;
+    document.getElementById('modal-price').textContent = `$${parseFloat(product.price).toFixed(2)}`;
+    document.getElementById('modal-color').textContent = product.color;
+    document.getElementById('modal-fabric').textContent = product.fabric;
+    document.getElementById('modal-description').textContent = product.description;
+    document.getElementById('modal-full-details').href = `/detail?id=${product.id}`;
+
+    const thumbnailsContainer = document.getElementById('modal-thumbnails');
+    thumbnailsContainer.innerHTML = '';
+    const images = [
+        product.img,
+        `https://picsum.photos/id/${parseInt(product.id) + 1}/300/533`,
+        `https://picsum.photos/id/${parseInt(product.id) + 2}/300/533`
+    ];
+    images.forEach((src, index) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `${product.name} Thumbnail ${index + 1}`;
+        img.setAttribute('data-full', src);
+        img.classList.add('product-detail__thumbnail');
+        if (index === 0) img.classList.add('product-detail__thumbnail--active');
+        thumbnailsContainer.appendChild(img);
+    });
+
+    modal.style.display = 'block';
+
+    const thumbnails = modal.querySelectorAll('.product-detail__thumbnail');
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', () => {
+            document.getElementById('modal-main-image').src = thumbnail.getAttribute('data-full');
+            thumbnails.forEach(t => t.classList.remove('product-detail__thumbnail--active'));
+            thumbnail.classList.add('product-detail__thumbnail--active');
+        });
+    });
+
+    document.querySelector('.close-modal').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+}
+
+
+// Full-Screen Gallery Modal Logic
+function showGalleryModal(images, initialSrc) {
+    const modal = document.getElementById('gallery-modal');
+    if (!modal) {
+        console.error('Gallery modal not found in DOM');
+        return;
+    }
+    const mainImage = document.getElementById('gallery-main-image');
+    const thumbnailsContainer = document.getElementById('gallery-thumbnails');
+    const prevButton = modal.querySelector('.gallery-modal__prev');
+    const nextButton = modal.querySelector('.gallery-modal__next');
+    let currentIndex = images.indexOf(initialSrc);
+
+    // Populate main image
+    mainImage.src = initialSrc;
+
+    // Populate thumbnails
+    thumbnailsContainer.innerHTML = '';
+    images.forEach((src, index) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `Gallery Image ${index + 1}`;
+        img.classList.add('gallery-modal__thumbnail');
+        if (src === initialSrc) img.classList.add('gallery-modal__thumbnail--active');
+        img.addEventListener('click', () => {
+            currentIndex = index;
+            mainImage.src = src;
+            updateThumbnails();
+        });
+    });
+    
+
+    // Update active thumbnail
+    function updateThumbnails() {
+        const thumbnails = modal.querySelectorAll('.gallery-modal__thumbnail');
+        thumbnails.forEach((t, i) => {
+            t.classList.toggle('gallery-modal__thumbnail--active', i === currentIndex);
+        });
+    }
+
+    // Navigation
+    prevButton.addEventListener('click', () => {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        mainImage.src = images[currentIndex];
+        updateThumbnails();
+    });
+
+    nextButton.addEventListener('click', () => {
+        currentIndex = (currentIndex + 1) % images.length;
+        mainImage.src = images[currentIndex];
+        updateThumbnails();
+    });
+
+    // Show modal
+    modal.style.display = 'block';
+
+    // Close modal
+    modal.querySelector('.gallery-modal__close').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+}
+
+// Form Submission and Export Logic (Unchanged)
 if (document.getElementById('measurement-form')) {
     const form = document.getElementById('measurement-form');
     let formData = null;
 
-    // Prepopulate form from localStorage if available
     if (localStorage.getItem('formData')) {
         formData = JSON.parse(localStorage.getItem('formData'));
         document.querySelector('.export-buttons').style.display = 'flex';
 
-        // Prepopulate text fields
         document.getElementById('full-name').value = formData.customer.fullName || '';
         document.getElementById('delivery-date').value = formData.customer.deliveryDate || '';
         document.getElementById('address').value = formData.customer.address || '';
@@ -159,7 +209,6 @@ if (document.getElementById('measurement-form')) {
         document.getElementById('lehenga-length').value = formData.lehenga.length || '';
         document.getElementById('lehenga-waist').value = formData.lehenga.waist || '';
 
-        // Prepopulate radio buttons
         const unitRadios = document.getElementsByName('unit');
         unitRadios.forEach(radio => {
             if (radio.value === formData.unit) {
@@ -168,15 +217,9 @@ if (document.getElementById('measurement-form')) {
         });
     }
 
-    // Remove existing listeners to prevent duplicates
     const newForm = form.cloneNode(true);
     form.parentNode.replaceChild(newForm, form);
 
-    newForm.querySelectorAll('input, textarea').forEach(input => {
-        input.addEventListener('input', () => {
-            input.checkValidity();
-        });
-    });
     newForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -238,15 +281,14 @@ if (document.getElementById('measurement-form')) {
 
             formData = responseData.data;
             localStorage.setItem('formData', JSON.stringify(formData));
+            alert('Form submitted successfully! Use the buttons below to export your data.');
             document.querySelector('.export-buttons').style.display = 'flex';
-            window.location.href = `/order-confirmation?id=${responseData.orderId}`;
         } catch (error) {
             console.error('Form submission error:', error);
             alert(`An error occurred while submitting the form: ${error.message}`);
         }
     });
 
-    // Export to Email (Plain Text)
     document.getElementById('export-email')?.addEventListener('click', () => {
         if (!formData) {
             alert('Please submit the form first!');
@@ -287,7 +329,6 @@ Waist: ${formData.lehenga.waist}
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
     });
 
-    // Export to PDF
     document.getElementById('export-pdf')?.addEventListener('click', () => {
         if (!formData) {
             alert('Please submit the form first!');
@@ -348,30 +389,3 @@ Waist: ${formData.lehenga.waist}
         doc.save(`Order_${formData.customer.fullName}_${formData.orderDate.replace(/[, :]/g, '_')}.pdf`);
     });
 }
-
-
-
-// Product Detail Gallery
-if (document.querySelector('.product-detail__gallery')) {
-    const mainImage = document.getElementById('main-image');
-    const thumbnails = document.querySelectorAll('.product-detail__thumbnail');
-
-    thumbnails.forEach(thumbnail => {
-        thumbnail.addEventListener('click', () => {
-            // Update main image
-            mainImage.src = thumbnail.getAttribute('data-full');
-            // Update active thumbnail
-            thumbnails.forEach(t => t.classList.remove('product-detail__thumbnail--active'));
-            thumbnail.classList.add('product-detail__thumbnail--active');
-        });
-    });
-}
-
-document.getElementById('product-search')?.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase();
-    fetch(`/products?search=${encodeURIComponent(query)}`)
-        .then(response => response.text())
-        .then(html => {
-            document.querySelector('.products-section').innerHTML = html;
-        });
-});

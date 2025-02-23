@@ -18,9 +18,12 @@
         <div class="product-grid" id="product-grid">
             <% products.forEach(product => { %>
                 <div class="product-card" data-id="<%= product.id %>">
-                    <img src="<%= product.img %>" alt="<%= product.name %>">
-                    <h3><%= product.name %></h3>
-                    <p>$<%= product.price.toFixed(2) %></p>
+                    <a href="/detail?id=<%= product.id %>" class="product-card__link">
+                        <img src="<%= product.img %>" alt="<%= product.name %>">
+                        <h3><%= product.name %></h3>
+                        <p>$<%= product.price.toFixed(2) %></p>
+                    </a>
+                    <button class="btn product-card__quick-view" data-id="<%= product.id %>">Quick View</button>
                 </div>
             <% }) %>
         </div>
@@ -30,6 +33,5 @@
             <% } %>
         </div>
     </section>
-    <%- include('partials/product-modal') %>
 </main>
 <%- include('partials/footer') %>
