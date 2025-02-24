@@ -1,0 +1,15 @@
+.hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: url('../images/hero-bg.jpg') no-repeat center/cover;
+    color: var(--text-light);
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+} 

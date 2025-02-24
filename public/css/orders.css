@@ -1,0 +1,30 @@
+.orders-section {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+
+.orders-section h1 {
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+}
+
+.order-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.order-list th,
+.order-list td {
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.order-list th {
+    background: var(--table-header-bg);
+    font-weight: 500;
+    color: var(--primary-color);
+} 

@@ -1,0 +1,40 @@
+:root {
+    /* Pinkish Theme Colors */
+    --primary-color: #E91E63; /* Vibrant pink for primary elements */
+    --primary-hover: #C2185B; /* Darker pink for hover/active states */
+    --text-dark: #555; /* Softer dark text (replacing #333) */
+    --text-light: #fff; /* White for contrast on pink backgrounds */
+    --text-muted: #777; /* Muted gray for secondary text */
+    --shadow-color: rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    --border-color: #ddd; /* Light gray border */
+    --bg-light: #f9f9f9; /* Light background */
+    --table-header-bg: #fce4ec; /* Light pink for table headers */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    line-height: 1.6;
+    color: var(--text-dark);
+    background: var(--bg-light);
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: var(--primary-color);
+    color: var(--text-light);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+    background: var(--primary-hover);
+    transform: scale(1.05);
+} 

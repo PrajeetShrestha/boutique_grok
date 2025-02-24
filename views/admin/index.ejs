@@ -1,0 +1,37 @@
+<%- include('../partials/header') %>
+<main>
+    <section class="admin-section">
+        <h1>Admin Dashboard - Products</h1>
+        <a href="/admin/add" class="btn">Add New Product</a>
+        <div class="product-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Primary Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% products.forEach(product => { %>
+                        <tr>
+                            <td><%= product.id %></td>
+                            <td><%= product.name %></td>
+                            <td>$<%= product.price.toFixed(2) %></td>
+                            <td><img src="<%= product.primaryImg %>" alt="<%= product.name %>" style="width: 50px;"></td>
+                            <td>
+                                <a href="/admin/edit/<%= product.id %>" class="btn">Edit</a>
+                                <form action="/admin/delete/<%= product.id %>" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn" onclick="return confirm('Are you sure?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<%- include('../partials/footer') %>

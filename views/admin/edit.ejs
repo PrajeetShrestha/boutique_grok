@@ -1,0 +1,48 @@
+<%- include('../partials/header') %>
+<main>
+    <section class="admin-section">
+        <h1>Edit Product #<%= product.id %></h1>
+        <% if (error) { %>
+            <p style="color: red;"><%= error %></p>
+        <% } %>
+        <form action="/admin/edit/<%= product.id %>" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="name">Title:</label>
+                <input type="text" id="name" name="name" value="<%= product.name %>" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Price:</label>
+                <input type="number" id="price" name="price" step="0.01" value="<%= product.price %>" required>
+            </div>
+            <div class="form-group">
+                <label for="primaryImg">Primary Image (Current: <img src="<%= product.primaryImg %>" style="width: 50px;">):</label>
+                <input type="file" id="primaryImg" name="primaryImg" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label>Current Additional Images:</label>
+                <% product.images.forEach((img, index) => { %>
+                    <div>
+                        <img src="<%= img %>" style="width: 50px;">
+                        <input type="checkbox" name="existingImages" value="<%= img %>" checked> Keep
+                    </div>
+                <% }) %>
+                <label for="images">Add New Images (up to 3):</label>
+                <input type="file" id="images" name="images" accept="image/*" multiple>
+            </div>
+            <div class="form-group">
+                <label for="color">Color:</label>
+                <input type="text" id="color" name="color" value="<%= product.color %>" required>
+            </div>
+            <div class="form-group">
+                <label for="fabric">Fabric:</label>
+                <input type="text" id="fabric" name="fabric" value="<%= product.fabric %>" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="4" required><%= product.description %></textarea>
+            </div>
+            <button type="submit" class="btn">Update Product</button>
+        </form>
+    </section>
+</main>
+<%- include('../partials/footer') %>

@@ -1,13 +1,7 @@
 // Hamburger Menu Toggle
-document.querySelector('.hamburger').addEventListener('click', (e) => {
-    e.preventDefault();
+document.querySelector('.hamburger').addEventListener('click', () => {
     const navLinks = document.querySelector('.nav-links');
-    if (navLinks) {
-        navLinks.classList.toggle('active');
-        console.log('Hamburger clicked, nav-links active:', navLinks.classList.contains('active'));
-    } else {
-        console.error('nav-links not found');
-    }
+    navLinks.classList.toggle('active');
 });
 
 // Client-side filtering and sorting (optional)
