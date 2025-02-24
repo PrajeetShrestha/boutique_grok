@@ -98,7 +98,146 @@ function seedProducts() {
     });
 }
 
-module.exports = {
+// Product-related operations
+function getAllProducts() {
+    return new Promise((resolve, reject) => {
+        db.all('SELECT * FROM products', [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
+}
+
+function getProductsWithPagination(limit, offset) {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT COUNT(*) as count FROM products', [], (err, row) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            const totalCount = row.count;
+
+            db.all('SELECT * FROM products LIMIT ? OFFSET ?', [limit, offset], (err, products) => {
+                if (err) reject(err);
+                else resolve({ products, totalCount });
+            });
+        });
+    });
+}
+
+function getProductById(id) {
+    return new Promise((resolve, reject) => {
+        db.get('SELECT * FROM products WHERE id = ?', [id], (err, row) => {
+            if (err) reject(err);
+            else resolve(row);
+        });
+    });
+}
+
+function createProduct(name, price, primaryImg, images, color, fabric, description) {
+    return new Promise((resolve, reject) => {
+        db.run(
+            'INSERT INTO products (name, price, primaryImg, images, color, fabric, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [name, price, primaryImg, JSON.stringify(images), color, fabric, description],
+            function(err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            }
+        );
+    });
+}
+
+function updateProduct(id, name, price, primaryImg, images, color, fabric, description) {
+    return new Promise((resolve, reject) => {
+        let sql = 'UPDATE products SET ';
+        const params = [];
+        const updates = [];
+
+        if (name) {
+            updates.push('name = ?');
+            params.push(name);
+        }
+        if (price) {
+            updates.push('price = ?');
+            params.push(price);
+        }
+        if (primaryImg) {
+            updates.push('primaryImg = ?');
+            params.push(primaryImg);
+        }
+        if (images) {
+            updates.push('images = ?');
+            params.push(JSON.stringify(images));
+        }
+        if (color) {
+            updates.push('color = ?');
+            params.push(color);
+        }
+        if (fabric) {
+            updates.push('fabric = ?');
+            params.push(fabric);
+        }
+        if (description) {
+            updates.push('description = ?');
+            params.push(description);
+        }
+
+        sql += updates.join(', ') + ' WHERE id = ?';
+        params.push(id);
+
+        db.run(sql, params, (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+
+function deleteProduct(id) {
+    return new Promise((resolve, reject) => {
+        db.run('DELETE FROM products WHERE id = ?', [id], (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+}
+
+// Order-related operations
+function getAllOrders() {
+    return new Promise((resolve, reject) => {
+        db.all('SELECT * FROM orders ORDER BY orderDate DESC', [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
+}
+
+function createOrder(orderData) {
+    return new Promise((resolve, reject) => {
+        const { customer, unit, blouse, lehenga, orderDate } = orderData;
+        const measurements = JSON.stringify({ blouse, lehenga });
+        
+        db.run(
+            'INSERT INTO orders (fullName, address, deliveryDate, unit, measurements, orderDate) VALUES (?, ?, ?, ?, ?, ?)',
+            [customer.fullName, customer.address, customer.deliveryDate, unit, measurements, orderDate],
+            function(err) {
+                if (err) reject(err);
+                else resolve(this.lastID);
+            }
+        );
+    });
+}
+
+const dbService = {
     db,
-    initializeDatabase
+    initializeDatabase,
+    getAllProducts,
+    getProductsWithPagination,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    getAllOrders,
+    createOrder
 };
+
+module.exports = dbService;

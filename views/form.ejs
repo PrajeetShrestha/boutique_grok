@@ -3,6 +3,11 @@
     <section class="measurement-form">
         <h1>Measurement Form</h1>
         <p>Please enter your details and measurements below to help us tailor your clothing perfectly.</p>
+        <% if (error) { %>
+            <div class="error-message">
+                <%= error %>
+            </div>
+        <% } %>
         <form id="measurement-form">
             <h2>Customer Details</h2>
             <div class="form-row">

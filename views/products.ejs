@@ -27,11 +27,14 @@
                 </div>
             <% }) %>
         </div>
-        <div class="pagination" id="pagination">
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <a href="/products?page=<%= i %>" class="<%= i === page ? 'active' : '' %>"><%= i %></a>
-            <% } %>
-        </div>
+        
+        <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+            <div class="pagination" id="pagination">
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="/products?page=<%= i %>" class="<%= (typeof page !== 'undefined' && i === page) ? 'active' : '' %>"><%= i %></a>
+                <% } %>
+            </div>
+        <% } %>
     </section>
 </main>
 <%- include('partials/footer') %>
