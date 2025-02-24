@@ -15,17 +15,29 @@
                 <input type="number" id="price" name="price" step="0.01" value="<%= product.price %>" required>
             </div>
             <div class="form-group">
-                <label for="primaryImg">Primary Image (Current: <img src="<%= product.primaryImg %>" style="width: 50px;">):</label>
+                <label for="primaryImg">Primary Image:</label>
+                <% if (product.primaryImg) { %>
+                    <div>
+                        <img src="<%= product.primaryImg %>" style="width: 50px;">
+                        <p>Current image</p>
+                    </div>
+                <% } %>
                 <input type="file" id="primaryImg" name="primaryImg" accept="image/*">
             </div>
             <div class="form-group">
-                <label>Current Additional Images:</label>
-                <% product.images.forEach((img, index) => { %>
-                    <div>
-                        <img src="<%= img %>" style="width: 50px;">
-                        <input type="checkbox" name="existingImages" value="<%= img %>" checked> Keep
+                <label>Additional Images:</label>
+                <% if (product.images && product.images.length > 0) { %>
+                    <div class="existing-images">
+                        <% product.images.forEach((img, index) => { %>
+                            <div class="image-item">
+                                <img src="<%= img %>" style="width: 50px;">
+                                <label>
+                                    <input type="checkbox" name="existingImages" value="<%= img %>" checked> Keep
+                                </label>
+                            </div>
+                        <% }) %>
                     </div>
-                <% }) %>
+                <% } %>
                 <label for="images">Add New Images (up to 3):</label>
                 <input type="file" id="images" name="images" accept="image/*" multiple>
             </div>
@@ -42,6 +54,7 @@
                 <textarea id="description" name="description" rows="4" required><%= product.description %></textarea>
             </div>
             <button type="submit" class="btn">Update Product</button>
+            <a href="/admin" class="btn">Cancel</a>
         </form>
     </section>
 </main>

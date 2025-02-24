@@ -4,6 +4,7 @@ const path = require('path');
 const dbPath = path.join(__dirname, '..', 'app/data', 'boutique.db');
 const db = new sqlite3.Database(dbPath);
 
+// Remove unused initial data array since we're using a database
 const productsData = [
     { id: 1, name: "Silk Dress", price: 89.99, primaryImg: "https://picsum.photos/id/1/300/533", images: JSON.stringify(["https://picsum.photos/id/2/300/533", "https://picsum.photos/id/3/300/533"]), color: "Red", fabric: "Silk", description: "Elegant silk dress perfect for evening wear." },
     // Add more initial data as needed
@@ -46,7 +47,7 @@ function initializeDatabase() {
                 name TEXT NOT NULL,
                 price REAL NOT NULL,
                 primaryImg TEXT NOT NULL,
-                images TEXT NOT NULL, -- JSON array of additional image URLs
+                images TEXT DEFAULT '[]',  /* Store as JSON string */
                 color TEXT NOT NULL,
                 fabric TEXT NOT NULL,
                 description TEXT NOT NULL
@@ -56,7 +57,7 @@ function initializeDatabase() {
                     reject(err);
                 } else {
                     console.log('Products table created or already exists');
-                    seedProducts();
+                    resolve();
                 }
             });
         });
@@ -118,8 +119,21 @@ function getProductsWithPagination(limit, offset) {
             const totalCount = row.count;
 
             db.all('SELECT * FROM products LIMIT ? OFFSET ?', [limit, offset], (err, products) => {
-                if (err) reject(err);
-                else resolve({ products, totalCount });
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                
+                // Ensure proper image paths
+                products = products.map(product => ({
+                    ...product,
+                    primaryImg: product.primaryImg.startsWith('/') ? product.primaryImg : '/' + product.primaryImg,
+                    images: JSON.parse(product.images || '[]').map(img => 
+                        img.startsWith('/') ? img : '/' + img
+                    )
+                }));
+
+                resolve({ products, totalCount });
             });
         });
     });
@@ -182,6 +196,11 @@ function updateProduct(id, name, price, primaryImg, images, color, fabric, descr
             params.push(description);
         }
 
+        if (updates.length === 0) {
+            resolve();
+            return;
+        }
+
         sql += updates.join(', ') + ' WHERE id = ?';
         params.push(id);
 
@@ -240,4 +259,28 @@ const dbService = {
     createOrder
 };
 
-module.exports = dbService;
+async function migrateDatabase() {
+    try {
+        // Drop existing products table
+        await new Promise((resolve, reject) => {
+            db.run('DROP TABLE IF EXISTS products', (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Create new table with updated schema
+        await initializeDatabase();
+
+        console.log('Database migration completed successfully');
+    } catch (error) {
+        console.error('Error during database migration:', error);
+        throw error;
+    }
+}
+
+// Export the migration function
+module.exports = {
+    ...dbService,
+    migrateDatabase
+};

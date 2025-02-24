@@ -17,6 +17,7 @@
                 <li class="<%= currentRoute === '/about' ? 'active' : '' %>"><a href="/about">About</a></li> -->
                 <li class="<%= currentRoute === '/form' ? 'active' : '' %>"><a href="/form">Measurement Form</a></li>
                 <li class="<%= currentRoute === '/orders' ? 'active' : '' %>"><a href="/orders">Orders</a></li>
+                <li class="<%= currentRoute.startsWith('/admin') ? 'active' : '' %>"><a href="/admin">Admin</a></li>
             </ul>
             <!-- <div class="search-bar">
                 <input type="text" id="product-search" placeholder="Search products...">

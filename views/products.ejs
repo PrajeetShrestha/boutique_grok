@@ -19,7 +19,9 @@
             <% products.forEach(product => { %>
                 <div class="product-card" data-id="<%= product.id %>">
                     <a href="/detail?id=<%= product.id %>" class="product-card__link">
-                        <img src="<%= product.img %>" alt="<%= product.name %>">
+                        <img src="<%= product.primaryImg.startsWith('/') ? product.primaryImg : '/' + product.primaryImg %>" 
+                             alt="<%= product.name %>"
+                             onerror="this.src='/images/placeholder.jpg'">
                         <h3><%= product.name %></h3>
                         <p>$<%= product.price.toFixed(2) %></p>
                     </a>

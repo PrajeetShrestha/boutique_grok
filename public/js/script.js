@@ -34,7 +34,7 @@ document.querySelectorAll('.product-card__quick-view').forEach(button => {
                         fabric: 'N/A',
                         description: 'Description placeholder'
                     };
-                    showProductModal(product);
+                    showModal('product-modal');
                 })
                 .catch(error => console.error('Error fetching product:', error));
         }
@@ -61,123 +61,50 @@ if (document.querySelector('.product-detail-page__gallery')) {
 
             const images = Array.from(thumbnails).map(t => t.getAttribute('data-full'));
   
-            showGalleryModal(images, mainImage.src);
+            showModal('gallery-modal');
         }
     });
 }
 
-// Product Modal Logic
-function showProductModal(product) {
-    console.log("Show")
-    const modal = document.getElementById('product-modal');
-    if (!modal) {
-        console.error('Product modal not found in DOM');
-        return;
-    }
-
-    document.getElementById('modal-main-image').src = product.img;
-    document.getElementById('modal-title').textContent = product.name;
-    document.getElementById('modal-price').textContent = `$${parseFloat(product.price).toFixed(2)}`;
-    document.getElementById('modal-color').textContent = product.color;
-    document.getElementById('modal-fabric').textContent = product.fabric;
-    document.getElementById('modal-description').textContent = product.description;
-    document.getElementById('modal-full-details').href = `/detail?id=${product.id}`;
-
-    const thumbnailsContainer = document.getElementById('modal-thumbnails');
-    thumbnailsContainer.innerHTML = '';
-    const images = [
-        product.img,
-        `https://picsum.photos/id/${parseInt(product.id) + 1}/300/533`,
-        `https://picsum.photos/id/${parseInt(product.id) + 2}/300/533`
-    ];
-    images.forEach((src, index) => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `${product.name} Thumbnail ${index + 1}`;
-        img.setAttribute('data-full', src);
-        img.classList.add('product-detail__thumbnail');
-        if (index === 0) img.classList.add('product-detail__thumbnail--active');
-        thumbnailsContainer.appendChild(img);
-    });
-
-    modal.style.display = 'block';
-
-    const thumbnails = modal.querySelectorAll('.product-detail__thumbnail');
-    thumbnails.forEach(thumbnail => {
-        thumbnail.addEventListener('click', () => {
-            document.getElementById('modal-main-image').src = thumbnail.getAttribute('data-full');
-            thumbnails.forEach(t => t.classList.remove('product-detail__thumbnail--active'));
-            thumbnail.classList.add('product-detail__thumbnail--active');
-        });
-    });
-
-    document.querySelector('.close-modal').addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+// Modal handling functions
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
 }
 
+function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.style.display = 'none';
+    modal.classList.remove('active');
+    document.body.style.overflow = ''; // Restore scrolling
+}
 
-// Full-Screen Gallery Modal Logic
-function showGalleryModal(images, initialSrc) {
-    const modal = document.getElementById('gallery-modal');
-    if (!modal) {
-        console.error('Gallery modal not found in DOM');
-        return;
-    }
-    const mainImage = document.getElementById('gallery-main-image');
-    const thumbnailsContainer = document.getElementById('gallery-thumbnails');
-    const prevButton = modal.querySelector('.gallery-modal__prev');
-    const nextButton = modal.querySelector('.gallery-modal__next');
-    let currentIndex = images.indexOf(initialSrc);
-
-    // Populate main image
-    mainImage.src = initialSrc;
-
-    // Populate thumbnails
-    thumbnailsContainer.innerHTML = '';
-    images.forEach((src, index) => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = `Gallery Image ${index + 1}`;
-        img.classList.add('gallery-modal__thumbnail');
-        if (src === initialSrc) img.classList.add('gallery-modal__thumbnail--active');
-        img.addEventListener('click', () => {
-            currentIndex = index;
-            mainImage.src = src;
-            updateThumbnails();
-        });
-    });
+// Event listeners for modals
+document.addEventListener('DOMContentLoaded', () => {
+    // Product modal
+    const productModal = document.getElementById('product-modal');
+    const closeProductModal = productModal.querySelector('.close-modal');
     
-
-    // Update active thumbnail
-    function updateThumbnails() {
-        const thumbnails = modal.querySelectorAll('.gallery-modal__thumbnail');
-        thumbnails.forEach((t, i) => {
-            t.classList.toggle('gallery-modal__thumbnail--active', i === currentIndex);
-        });
-    }
-
-    // Navigation
-    prevButton.addEventListener('click', () => {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        mainImage.src = images[currentIndex];
-        updateThumbnails();
+    closeProductModal.addEventListener('click', () => hideModal('product-modal'));
+    
+    // Gallery modal
+    const galleryModal = document.getElementById('gallery-modal');
+    const closeGalleryModal = galleryModal.querySelector('.gallery-modal__close');
+    
+    closeGalleryModal.addEventListener('click', () => hideModal('gallery-modal'));
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', (event) => {
+        if (event.target === productModal) {
+            hideModal('product-modal');
+        }
+        if (event.target === galleryModal) {
+            hideModal('gallery-modal');
+        }
     });
-
-    nextButton.addEventListener('click', () => {
-        currentIndex = (currentIndex + 1) % images.length;
-        mainImage.src = images[currentIndex];
-        updateThumbnails();
-    });
-
-    // Show modal
-    modal.style.display = 'block';
-
-    // Close modal
-    modal.querySelector('.gallery-modal__close').addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-}
+});
 
 // Form Submission and Export Logic (Unchanged)
 if (document.getElementById('measurement-form')) {

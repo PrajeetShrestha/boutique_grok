@@ -1,69 +1,131 @@
 const dbService = require('../../services/dbService');
 
-exports.getAdminDashboard = async (req, res) => {
-    try {
-        const products = await dbService.getAllProducts();
-        res.render('admin/index', { products, currentRoute: '/admin' });
-    } catch (err) {
-        console.error('Error fetching products:', err);
-        res.status(500).send('Internal Server Error');
+const adminController = {
+    // Get all products for admin dashboard
+    getAdminDashboard: async (req, res) => {
+        try {
+            const { products, totalCount } = await dbService.getProductsWithPagination(100, 0);
+            res.render('admin/index', {
+                products,
+                currentRoute: '/admin'
+            });
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            res.status(500).render('404', { currentRoute: '/admin' });
+        }
+    },
+
+    // Show add product form
+    getAddProduct: (req, res) => {
+        res.render('admin/add', {
+            error: null,
+            currentRoute: '/admin/add'
+        });
+    },
+
+    // Handle add product form submission
+    postAddProduct: async (req, res) => {
+        try {
+            const { name, price, color, fabric, description } = req.body;
+            
+            // Check if primary image was uploaded
+            if (!req.files?.primaryImg?.[0]) {
+                throw new Error('Primary image is required');
+            }
+
+            // Ensure paths start with /
+            const primaryImg = req.files.primaryImg[0].filename;
+            const primaryImgPath = primaryImg.startsWith('/') ? primaryImg : '/uploads/' + primaryImg;
+            
+            const additionalImages = req.files.images 
+                ? req.files.images.map(file => '/uploads/' + file.filename)
+                : [];
+
+            await dbService.createProduct(
+                name,
+                parseFloat(price),
+                primaryImgPath,
+                additionalImages,
+                color,
+                fabric,
+                description
+            );
+
+            res.redirect('/admin');
+        } catch (error) {
+            console.error('Error adding product:', error);
+            res.render('admin/add', {
+                error: error.message || 'Failed to add product',
+                currentRoute: '/admin/add'
+            });
+        }
+    },
+
+    // Show edit product form
+    getEditProduct: async (req, res) => {
+        try {
+            const product = await dbService.getProductById(req.params.id);
+            if (!product) {
+                return res.status(404).render('404', { currentRoute: '/admin' });
+            }
+            
+            // Parse images JSON string or provide empty array as fallback
+            product.images = product.images ? JSON.parse(product.images) : [];
+            
+            res.render('admin/edit', {
+                product,
+                error: null,
+                currentRoute: '/admin/edit'
+            });
+        } catch (error) {
+            console.error('Error fetching product:', error);
+            res.status(500).render('404', { currentRoute: '/admin' });
+        }
+    },
+
+    // Handle edit product form submission
+    postEditProduct: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { name, price, color, fabric, description } = req.body;
+            const primaryImg = req.files?.primaryImg?.[0]?.path;
+            const additionalImages = req.files?.images?.map(file => file.path);
+            const existingImages = Array.isArray(req.body.existingImages) 
+                ? req.body.existingImages 
+                : [req.body.existingImages].filter(Boolean);
+
+            await dbService.updateProduct(
+                id,
+                name,
+                parseFloat(price),
+                primaryImg,
+                [...(additionalImages || []), ...(existingImages || [])],
+                color,
+                fabric,
+                description
+            );
+
+            res.redirect('/admin');
+        } catch (error) {
+            console.error('Error updating product:', error);
+            res.render('admin/edit', {
+                product: { ...req.body, id: req.params.id },
+                error: 'Failed to update product',
+                currentRoute: '/admin/edit'
+            });
+        }
+    },
+
+    // Handle product deletion
+    deleteProduct: async (req, res) => {
+        try {
+            await dbService.deleteProduct(req.params.id);
+            res.redirect('/admin');
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            res.status(500).redirect('/admin');
+        }
     }
 };
 
-exports.getAddProduct = (req, res) => {
-    res.render('admin/add', { error: null, currentRoute: '/admin/add' });
-};
-
-exports.postAddProduct = async (req, res) => {
-    try {
-        const { name, price, color, fabric, description } = req.body;
-        const primaryImg = req.files['primaryImg'][0].filename;
-        const images = req.files['images'] ? req.files['images'].map(file => file.filename) : [];
-
-        await dbService.createProduct(name, price, primaryImg, images, color, fabric, description);
-        res.redirect('/admin');
-    } catch (err) {
-        console.error('Error adding product:', err);
-        res.render('admin/add', { error: 'Failed to add product. Please try again.', currentRoute: '/admin/add' });
-    }
-};
-
-exports.getEditProduct = async (req, res) => {
-    try {
-        const productId = req.params.id;
-        const product = await dbService.getProductById(productId);
-        res.render('admin/edit', { product, error: null, currentRoute: '/admin/edit' });
-    } catch (err) {
-        console.error('Error fetching product:', err);
-        res.status(500).send('Internal Server Error');
-    }
-};
-
-exports.postEditProduct = async (req, res) => {
-    try {
-        const productId = req.params.id;
-        const { name, price, color, fabric, description, existingImages } = req.body;
-        const primaryImg = req.files['primaryImg'] ? req.files['primaryImg'][0].filename : null;
-        const newImages = req.files['images'] ? req.files['images'].map(file => file.filename) : [];
-        const imagesToKeep = existingImages ? [].concat(existingImages) : [];
-        const images = [...imagesToKeep, ...newImages];
-
-        await dbService.updateProduct(productId, name, price, primaryImg, images, color, fabric, description);
-        res.redirect('/admin');
-    } catch (err) {
-        console.error('Error updating product:', err);
-        const product = await dbService.getProductById(req.params.id);
-        res.render('admin/edit', { product, error: 'Failed to update product. Please try again.', currentRoute: '/admin/edit' });
-    }
-};
-
-exports.postDeleteProduct = async (req, res) => {
-    try {
-        const productId = req.params.id;
-        await dbService.deleteProduct(productId);
-        res.redirect('/admin');
-    } catch (err) {
-        console.error('Error deleting product:', err);
-        res.status(500).send('Internal Server Error');
-    }
-}; 
+module.exports = adminController; 
