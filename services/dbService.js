@@ -13,7 +13,7 @@ const productsData = [
 function initializeDatabase() {
     return new Promise((resolve, reject) => {
         db.serialize(() => {
-            // Orders table (unchanged)
+            // Orders table with status field
             db.run(`CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 fullName TEXT NOT NULL,
@@ -31,7 +31,8 @@ function initializeDatabase() {
                 armHole REAL NOT NULL,
                 lehengaLength REAL NOT NULL,
                 lehengaWaist REAL NOT NULL,
-                orderDate TEXT NOT NULL
+                orderDate TEXT NOT NULL,
+                status TEXT DEFAULT 'pending'
             )`, (err) => {
                 if (err) {
                     console.error('Error creating orders table:', err.message);
@@ -233,14 +234,44 @@ function getAllOrders() {
 function createOrder(orderData) {
     return new Promise((resolve, reject) => {
         const { customer, unit, blouse, lehenga, orderDate } = orderData;
-        const measurements = JSON.stringify({ blouse, lehenga });
         
         db.run(
-            'INSERT INTO orders (fullName, address, deliveryDate, unit, measurements, orderDate) VALUES (?, ?, ?, ?, ?, ?)',
-            [customer.fullName, customer.address, customer.deliveryDate, unit, measurements, orderDate],
+            'INSERT INTO orders (fullName, address, deliveryDate, unit, blouseLength, chest, waist, frontNeck, backNeck, shoulder, sleevesLength, sleevesRound, armHole, lehengaLength, lehengaWaist, orderDate, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                customer.fullName, 
+                customer.address, 
+                customer.deliveryDate, 
+                unit,
+                blouse.length,
+                blouse.chest,
+                blouse.waist,
+                blouse.frontNeck,
+                blouse.backNeck,
+                blouse.shoulder,
+                blouse.sleevesLength,
+                blouse.sleevesRound,
+                blouse.armHole,
+                lehenga.length,
+                lehenga.waist,
+                orderDate,
+                'pending'
+            ],
             function(err) {
                 if (err) reject(err);
                 else resolve(this.lastID);
+            }
+        );
+    });
+}
+
+function updateOrderStatus(id, status) {
+    return new Promise((resolve, reject) => {
+        db.run(
+            'UPDATE orders SET status = ? WHERE id = ?',
+            [status, id],
+            (err) => {
+                if (err) reject(err);
+                else resolve();
             }
         );
     });
@@ -256,7 +287,8 @@ const dbService = {
     updateProduct,
     deleteProduct,
     getAllOrders,
-    createOrder
+    createOrder,
+    updateOrderStatus
 };
 
 async function migrateDatabase() {

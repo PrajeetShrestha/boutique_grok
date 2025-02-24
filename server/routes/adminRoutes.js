@@ -44,6 +44,7 @@ const upload = multer({
 
 // Admin routes
 router.get('/', adminController.getAdminDashboard);
+router.get('/orders', adminController.getOrders);
 router.get('/add', adminController.getAddProduct);
 router.post('/add', 
     upload.fields([
@@ -61,5 +62,6 @@ router.post('/edit/:id',
     adminController.postEditProduct
 );
 router.post('/delete/:id', adminController.deleteProduct);
+router.post('/orders/:id/status', adminController.updateOrderStatus);
 
 module.exports = router; 

@@ -125,6 +125,46 @@ const adminController = {
             console.error('Error deleting product:', error);
             res.status(500).redirect('/admin');
         }
+    },
+
+    // Get orders page
+    getOrders: async (req, res) => {
+        try {
+            const orders = await dbService.getAllOrders();
+            res.render('admin/orders', {
+                orders,
+                currentRoute: '/admin/orders'
+            });
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+            res.status(500).render('404', { currentRoute: '/admin/orders' });
+        }
+    },
+
+    // Update order status
+    updateOrderStatus: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            
+            // Validate status
+            const validStatuses = ['pending', 'in_progress', 'completed', 'archived'];
+            if (!validStatuses.includes(status)) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'Invalid status' 
+                });
+            }
+
+            await dbService.updateOrderStatus(id, status);
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            res.status(500).json({ 
+                success: false, 
+                error: 'Failed to update order status' 
+            });
+        }
     }
 };
 

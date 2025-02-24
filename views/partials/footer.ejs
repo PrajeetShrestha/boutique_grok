@@ -3,5 +3,8 @@
 </footer>
 <%- include('./modals') %>
 <script src="/js/script.js"></script>
+<% if (currentRoute.includes('/admin/orders')) { %>
+    <script src="/js/orders.js"></script>
+<% } %>
 </body>
 </html>
