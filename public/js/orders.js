@@ -45,6 +45,14 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.display = 'none';
         }
     };
+
+    // Set initial filter state from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusFilter = urlParams.get('status');
+    if (statusFilter) {
+        document.getElementById('status-filter').value = statusFilter;
+        filterOrders(statusFilter);
+    }
 });
 
 function updateOrderStatus(selectElement) {
@@ -61,12 +69,25 @@ function updateOrderStatus(selectElement) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Update the status badge
-            const statusBadge = selectElement.nextElementSibling;
-            statusBadge.className = `status-badge status-${newStatus}`;
-            statusBadge.textContent = newStatus.replace('_', ' ');
+            // Update all status elements for this order (both in card and table view)
+            const orderElements = document.querySelectorAll(`[data-status][data-order-id="${orderId}"]`);
+            orderElements.forEach(element => {
+                element.dataset.status = newStatus;
+            });
+
+            // Update all status selects for this order
+            const statusSelects = document.querySelectorAll(`select[data-order-id="${orderId}"]`);
+            statusSelects.forEach(select => {
+                select.value = newStatus;
+            });
+
+            // Update status badges if they exist
+            const statusBadges = document.querySelectorAll(`.status-badge[data-order-id="${orderId}"]`);
+            statusBadges.forEach(badge => {
+                badge.className = `status-badge status-${newStatus}`;
+                badge.textContent = newStatus.replace('_', ' ');
+            });
             
-            // Show success message
             showNotification('Status updated successfully', 'success');
         } else {
             showNotification('Failed to update status', 'error');
@@ -88,4 +109,25 @@ function showNotification(message, type) {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+function filterOrders(status) {
+    const orderElements = document.querySelectorAll('[data-status]'); // This will select both cards and rows
+    
+    orderElements.forEach(element => {
+        if (status === 'all' || element.dataset.status === status) {
+            element.classList.remove('hidden');
+        } else {
+            element.classList.add('hidden');
+        }
+    });
+
+    // Update URL
+    const url = new URL(window.location);
+    if (status === 'all') {
+        url.searchParams.delete('status');
+    } else {
+        url.searchParams.set('status', status);
+    }
+    window.history.pushState({}, '', url);
 } 

@@ -277,6 +277,19 @@ function updateOrderStatus(id, status) {
     });
 }
 
+function getOrdersByStatus(status) {
+    return new Promise((resolve, reject) => {
+        db.all(
+            'SELECT * FROM orders WHERE status = ? ORDER BY orderDate DESC',
+            [status],
+            (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            }
+        );
+    });
+}
+
 const dbService = {
     db,
     initializeDatabase,
@@ -288,7 +301,8 @@ const dbService = {
     deleteProduct,
     getAllOrders,
     createOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    getOrdersByStatus
 };
 
 async function migrateDatabase() {

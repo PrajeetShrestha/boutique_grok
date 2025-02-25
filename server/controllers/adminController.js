@@ -130,10 +130,19 @@ const adminController = {
     // Get orders page
     getOrders: async (req, res) => {
         try {
-            const orders = await dbService.getAllOrders();
+            const { status } = req.query;
+            let orders;
+
+            if (status && status !== 'all') {
+                orders = await dbService.getOrdersByStatus(status);
+            } else {
+                orders = await dbService.getAllOrders();
+            }
+
             res.render('admin/orders', {
                 orders,
-                currentRoute: '/admin/orders'
+                currentRoute: '/admin/orders',
+                selectedStatus: status || 'all'
             });
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -157,7 +166,12 @@ const adminController = {
             }
 
             await dbService.updateOrderStatus(id, status);
-            res.json({ success: true });
+            
+            // Send success response
+            res.json({ 
+                success: true,
+                status: status
+            });
         } catch (error) {
             console.error('Error updating order status:', error);
             res.status(500).json({ 

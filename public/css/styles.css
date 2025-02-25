@@ -8,3 +8,47 @@
 @import url('form.css');
 @import url('orders.css');
 @import url('admin.css');
+
+
+/* Modal Adjustments for Mobile */
+.modal-content {
+    width: 95%;
+    max-width: 500px;
+    margin: 1rem auto;
+    padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .modal-content {
+        width: 90%;
+        padding: 2rem;
+        margin: 2rem auto;
+    }
+}
+
+/* Form Groups for Order Modal */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}

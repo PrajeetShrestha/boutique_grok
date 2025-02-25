@@ -1,42 +1,41 @@
 <%- include('partials/header') %>
 <main>
     <section class="products-section">
-        <h1>Our Collection</h1>
-        <div class="filters">
-            <select id="category-filter">
-                <option value="all">All Categories</option>
-                <option value="dresses">Dresses</option>
-                <option value="tops">Tops</option>
-                <option value="accessories">Accessories</option>
-            </select>
-            <select id="sort">
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name">Name: A-Z</option>
-            </select>
-        </div>
-        <div class="product-grid" id="product-grid">
+        <h1>Our Products</h1>
+        
+        <div class="products-grid">
             <% products.forEach(product => { %>
-                <div class="product-card" data-id="<%= product.id %>">
-                    <a href="/detail?id=<%= product.id %>" class="product-card__link">
-                        <img src="<%= product.primaryImg.startsWith('/') ? product.primaryImg : '/' + product.primaryImg %>" 
+                <div class="product-card">
+                    <div class="product-card__image">
+                        <img src="<%= product.primaryImg %>" 
                              alt="<%= product.name %>"
                              onerror="this.src='/images/placeholder.jpg'">
+                    </div>
+                    <div class="product-card__content">
                         <h3><%= product.name %></h3>
-                        <p>$<%= product.price.toFixed(2) %></p>
-                    </a>
-                    <button class="btn product-card__quick-view" data-id="<%= product.id %>">Quick View</button>
+                        <div class="product-card__details">
+                            <p><strong>Price:</strong> $<%= product.price.toFixed(2) %></p>
+                            <p><strong>Color:</strong> <%= product.color %></p>
+                            <p><strong>Fabric:</strong> <%= product.fabric %></p>
+                        </div>
+                        <button class="btn btn-primary order-btn" 
+                                onclick="showOrderForm(<%= JSON.stringify(product) %>)">
+                            Order Now
+                        </button>
+                    </div>
                 </div>
             <% }) %>
         </div>
-        
-        <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-            <div class="pagination" id="pagination">
-                <% for (let i = 1; i <= totalPages; i++) { %>
-                    <a href="/products?page=<%= i %>" class="<%= (typeof page !== 'undefined' && i === page) ? 'active' : '' %>"><%= i %></a>
-                <% } %>
-            </div>
-        <% } %>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <% if (currentPage > 1) { %>
+                <a href="/products?page=<%= currentPage - 1 %>" class="btn btn-secondary">&laquo; Previous</a>
+            <% } %>
+            <% if (currentPage < totalPages) { %>
+                <a href="/products?page=<%= currentPage + 1 %>" class="btn btn-secondary">Next &raquo;</a>
+            <% } %>
+        </div>
     </section>
 </main>
 <%- include('partials/footer') %>

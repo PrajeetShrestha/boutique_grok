@@ -7,15 +7,17 @@ exports.getHome = (req, res) => {
 exports.getProducts = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const productsPerPage = 12;
+        const limit = 12;
+        const offset = (page - 1) * limit;
+
+        const { products, totalCount } = await dbService.getProductsWithPagination(limit, offset);
         
-        const { products, totalCount } = await dbService.getProductsWithPagination(productsPerPage, (page - 1) * productsPerPage);
-        const totalPages = Math.ceil(totalCount / productsPerPage);
+        const totalPages = Math.ceil(totalCount / limit);
 
         res.render('products', {
             products,
-            page,
-            totalPages,
+            currentPage: page,
+            totalPages: totalPages,
             currentRoute: '/products'
         });
     } catch (error) {
