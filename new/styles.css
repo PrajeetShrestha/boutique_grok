@@ -1,0 +1,145 @@
+body{
+    
+    
+}
+
+.product-grid{
+font-family: 'Roboto Condensed', sans-serif;
+text-align: center;
+overflow: hidden;
+position: relative;
+border: 4px solid #fff;
+}
+.product-grid:before{
+content: '';
+height: 100%;
+width: 100%;
+position: absolute;
+left: 0;
+top: 0;
+z-index: 1;
+transition: all 0.3s ease 0s;
+}
+.product-grid:hover:before{ background-color: rgba(0,0,0,0.05); }
+.product-grid .product-image{
+overflow: hidden;
+position: relative;
+}
+.product-grid .product-image a{ display: block; }
+.product-grid .product-image img{
+width: 100%;
+height: auto;
+}
+.product-discount-label{
+color: #fff;
+background-color: #000;
+font-size: 13px;
+letter-spacing: 1px;
+padding: 8px 12px;
+border-radius: 5px;
+position: absolute;
+left: 15px;
+top: 15px;
+}
+.product-grid .social{
+width: 100%;
+padding: 30px 0;
+margin: 0;
+list-style: none;
+transform: translateX(-50%) translateY(-50%);
+position: absolute;
+left: 50%;
+top: 50%;
+z-index: 2;
+}
+.product-grid .social li{
+display: inline-block;
+opacity: 0;
+transform: translateY(300%);
+transition: all 0.5s ease 0s;
+}
+.product-grid .social li:nth-child(2){ transition-delay: 0.05s; }
+.product-grid .social li:nth-child(3){ transition-delay: 0.13s; }
+.product-grid .social li:nth-child(4){ transition-delay: 0.16s; }
+.product-grid:hover .social li{
+opacity: 1;
+transform: translateY(0);
+}
+.product-grid .social li a{
+color: #000;
+background-color: #fff;
+line-height: 50px;
+height: 50px;
+width: 50px;
+margin: 0 2px 10px;
+border-radius: 50%;
+display: block;
+position: relative;
+z-index: 2;
+transition: all 0.3s;
+}
+.product-grid .social li a:hover{
+color: #fff;
+background-color: orange;
+}
+.product-grid .product-content{
+padding: 18px;
+position: relative;
+z-index: 2;
+background-color: white;
+}
+.product-grid .title{
+font-size: 16px;
+font-weight: 500;
+margin: 0 0 10px 0;
+}
+.product-grid .title a{ color: #000; }
+.product-grid .title a:hover{ color: #fa8231; }
+.product-grid .price{
+color: #fa8231;
+font-size: 18px;
+font-weight: 600;
+}
+.product-grid .price span{
+color: #777;
+margin: 0 0 0 5px;
+font-weight: 300;
+text-decoration: line-through;
+display: inline-block;
+}
+@media only screen and (max-width:990px){
+.product-grid{ margin-bottom: 30px; }
+}
+  .pocial
+{
+position:fixed;
+bottom:10px;
+right:10px;
+background:red;
+font-family:verdana;
+padding:5px;
+border-radius:5px;
+animation:new .5s linear infinite;
+margin-top:-50px;
+}
+.pocial a
+{
+text-decoration:none;
+color:#fff;
+font-weight:bold;
+}
+@keyframes new
+{
+0%
+{
+transform:scaleX(1);
+}
+50%
+{
+transform:scaleX(.95);
+}
+100%
+{
+transform:scaleX(1);
+}
+}

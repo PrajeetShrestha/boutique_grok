@@ -1,0 +1,84 @@
+/* Admin Dashboard Layout */
+.admin-dashboard {
+    padding: var(--spacing-xl);
+}
+
+.admin-dashboard__header {
+    margin-bottom: var(--spacing-xl);
+}
+
+.admin-dashboard__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Admin Actions */
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+/* Admin Product Grid */
+.admin-products {
+    display: grid;
+    gap: var(--spacing-lg);
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.admin-product__image {
+    position: relative;
+    padding-top: 133.33%;
+    background: var(--bg-light);
+}
+
+.admin-product__image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-product__content {
+    padding: var(--spacing-md);
+}
+
+.admin-product__title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.admin-product__details {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.admin-product__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Admin Buttons */
+.admin-btn {
+    /* Inherits from .btn in global.css */
+}
+
+.admin-btn--view {
+    background: var(--info);
+    color: var(--text-light);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .admin-dashboard {
+        padding: var(--spacing-md);
+    }
+
+    .admin-actions {
+        flex-direction: column;
+    }
+} 

@@ -2,40 +2,80 @@
 <main>
     <section class="products-section">
         <h1>Our Products</h1>
-        
+
+        <!-- Filters and Sorting -->
+        <div class="filters-sorting">
+            <select name="sort" onchange="window.location.href=`/products?page=1&sort=${this.value}`">
+                <option value="">Sort By</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Name: A to Z</option>
+                <option value="name-desc">Name: Z to A</option>
+            </select>
+            <select name="filter-color" onchange="window.location.href=`/products?page=1&color=${this.value}`">
+                <option value="">Filter by Color</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="black">Black</option>
+                <!-- Add more colors as needed -->
+            </select>
+            <select name="filter-fabric" onchange="window.location.href=`/products?page=1&fabric=${this.value}`">
+                <option value="">Filter by Fabric</option>
+                <option value="cotton">Cotton</option>
+                <option value="polyester">Polyester</option>
+                <option value="wool">Wool</option>
+                <option value="silk">Silk</option>
+                <!-- Add more fabrics as needed -->
+            </select>
+        </div>
+
+        <!-- Products Grid -->
         <div class="products-grid">
-            <% products.forEach(product => { %>
-                <div class="product-card">
-                    <div class="product-card__image">
-                        <img src="<%= product.primaryImg %>" 
-                             alt="<%= product.name %>"
-                             onerror="this.src='/images/placeholder.jpg'">
-                    </div>
-                    <div class="product-card__content">
-                        <h3><%= product.name %></h3>
-                        <div class="product-card__details">
-                            <p><strong>Price:</strong> $<%= product.price.toFixed(2) %></p>
-                            <p><strong>Color:</strong> <%= product.color %></p>
-                            <p><strong>Fabric:</strong> <%= product.fabric %></p>
+            <% if (products.length > 0) { %>
+                <% products.forEach(product => { %>
+                    <div class="product-card">
+                        <div class="product-card__image">
+                            <img src="<%= product.primaryImg %>" 
+                                 alt="<%= product.name %>"
+                                 onerror="this.src='/images/placeholder.jpg'">
                         </div>
-                        <button class="btn btn-primary order-btn" 
-                                onclick="showOrderForm(<%= JSON.stringify(product) %>)">
-                            Order Now
-                        </button>
+                        <div class="product-card__content">
+                            <h3 class="product-card__title"><%= product.name %></h3>
+                            <div class="product-card__details">
+                                <p><strong>Price:</strong> $<%= product.price.toFixed(2) %></p>
+                                <p><strong>Color:</strong> <%= product.color %></p>
+                                <p><strong>Fabric:</strong> <%= product.fabric %></p>
+                            </div>
+                            <button class="order-btn" 
+                                    onclick="showOrderForm(<%= JSON.stringify(product) %>)">
+                                Order Now
+                            </button>
+                        </div>
                     </div>
-                </div>
-            <% }) %>
+                <% }) %>
+            <% } else { %>
+                <p style="text-align: center; color: #6b7280;">No products found.</p>
+            <% } %>
         </div>
 
         <!-- Pagination -->
-        <div class="pagination">
-            <% if (currentPage > 1) { %>
-                <a href="/products?page=<%= currentPage - 1 %>" class="btn btn-secondary">&laquo; Previous</a>
-            <% } %>
-            <% if (currentPage < totalPages) { %>
-                <a href="/products?page=<%= currentPage + 1 %>" class="btn btn-secondary">Next &raquo;</a>
-            <% } %>
-        </div>
+        <% if (totalPages > 1) { %>
+            <div class="pagination">
+                <% if (currentPage > 1) { %>
+                    <a href="/products?page=<%= currentPage - 1 %><%= sort ? `&sort=${sort}` : '' %><%= color ? `&color=${color}` : '' %><%= fabric ? `&fabric=${fabric}` : '' %>" class="btn">« Previous</a>
+                <% } %>
+
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="/products?page=<%= i %><%= sort ? `&sort=${sort}` : '' %><%= color ? `&color=${color}` : '' %><%= fabric ? `&fabric=${fabric}` : '' %>" 
+                       class="btn <%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                    <a href="/products?page=<%= currentPage + 1 %><%= sort ? `&sort=${sort}` : '' %><%= color ? `&color=${color}` : '' %><%= fabric ? `&fabric=${fabric}` : '' %>" class="btn">Next »</a>
+                <% } %>
+            </div>
+        <% } %>
     </section>
 </main>
 <%- include('partials/footer') %>

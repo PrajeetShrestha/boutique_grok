@@ -1,0 +1,99 @@
+/* Admin Order Management Styles */
+.admin-orders {
+    padding: 2rem;
+}
+
+.admin-orders__filter {
+    margin-bottom: 2rem;
+}
+
+.admin-orders__filter-select {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    min-width: 200px;
+}
+
+/* Card View */
+.admin-orders__cards {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.admin-order-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.admin-order-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.admin-order-card__content {
+    padding: 1rem;
+}
+
+.admin-order-card__info {
+    margin-bottom: 1rem;
+}
+
+.admin-order-card__status {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+}
+
+/* Status Badge */
+.admin-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    text-transform: capitalize;
+}
+
+.admin-status--pending { background: #fff3cd; color: #856404; }
+.admin-status--in-progress { background: #cce5ff; color: #004085; }
+.admin-status--completed { background: #d4edda; color: #155724; }
+.admin-status--archived { background: #e2e3e5; color: #383d41; }
+
+/* Table View */
+.admin-orders__table {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .admin-orders__cards {
+        display: none;
+    }
+
+    .admin-orders__table {
+        display: block;
+    }
+
+    .admin-orders__table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .admin-orders__table th,
+    .admin-orders__table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .admin-orders__table th {
+        background: #f8f9fa;
+        font-weight: 500;
+    }
+} 

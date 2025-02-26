@@ -1,16 +1,32 @@
 :root {
-    /* Pinkish Theme Colors */
-    --primary-color: #E91E63; /* Vibrant pink for primary elements */
-    --primary-hover: #C2185B; /* Darker pink for hover/active states */
-    --text-dark: #555; /* Softer dark text (replacing #333) */
-    --text-light: #fff; /* White for contrast on pink backgrounds */
-    --text-muted: #777; /* Muted gray for secondary text */
-    --shadow-color: rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    --border-color: #ddd; /* Light gray border */
-    --bg-light: #f9f9f9; /* Light background */
-    --table-header-bg: #fce4ec; /* Light pink for table headers */
+    /* Colors */
+    --primary-color: #E91E63;
+    --primary-hover: #C2185B;
+    --text-dark: #555;
+    --text-light: #fff;
+    --text-muted: #777;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --border-color: #ddd;
+    --bg-light: #f9f9f9;
+    --table-header-bg: #fce4ec;
+    
+    /* Common Colors */
+    --success: #4CAF50;
+    --success-hover: #45a049;
+    --danger: #dc3545;
+    --danger-hover: #bd2130;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
 }
 
+/* Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -24,17 +40,114 @@ body {
     background: var(--bg-light);
 }
 
+/* Common Layout */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+/* Common Card Styles */
+.card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    overflow: hidden;
+}
+
+/* Common Button Styles */
 .btn {
     display: inline-block;
     padding: 0.8rem 1.5rem;
-    background: var(--primary-color);
-    color: var(--text-light);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
     text-decoration: none;
-    border-radius: 5px;
-    transition: background 0.3s, transform 0.2s;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 .btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn--primary {
+    background: var(--primary-color);
+    color: var(--text-light);
+}
+
+.btn--primary:hover {
     background: var(--primary-hover);
-    transform: scale(1.05);
+}
+
+.btn--success {
+    background: var(--success);
+    color: var(--text-light);
+}
+
+.btn--danger {
+    background: var(--danger);
+    color: var(--text-light);
+}
+
+/* Common Form Styles */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.1);
+}
+
+/* Common Table Styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table th {
+    background: var(--table-header-bg);
+    font-weight: 500;
+}
+
+/* Common Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    text-transform: capitalize;
+}
+
+/* Common Grid Layout */
+.grid {
+    display: grid;
+    gap: var(--spacing-md);
 } 

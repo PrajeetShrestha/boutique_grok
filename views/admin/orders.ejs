@@ -1,9 +1,10 @@
 <%- include('../partials/header') %>
+<link rel="stylesheet" href="/css/admin-orders.css">
 <main>
-    <section class="admin-section">
+    <section class="admin-orders">
         <h1>Orders Management</h1>
-        <div class="orders-filter">
-            <select id="status-filter" onchange="filterOrders(this.value)">
+        <div class="admin-orders__filter">
+            <select id="status-filter" class="admin-orders__filter-select" onchange="filterOrders(this.value)">
                 <option value="all">All Orders</option>
                 <option value="pending">Pending</option>
                 <option value="in_progress">In Progress</option>
@@ -13,25 +14,25 @@
         </div>
         
         <!-- Mobile View (Cards) -->
-        <div class="order-cards" id="orders-cards">
+        <div class="admin-orders__cards" id="orders-cards">
             <% orders.forEach(order => { %>
-                <div class="order-card" data-status="<%= order.status || 'pending' %>" data-order-id="<%= order.id %>">
-                    <div class="order-card__header">
-                        <span class="order-id">#<%= order.id %></span>
-                        <select class="status-select" data-order-id="<%= order.id %>" onchange="updateOrderStatus(this)">
+                <div class="admin-order-card" data-status="<%= order.status || 'pending' %>" data-order-id="<%= order.id %>">
+                    <div class="admin-order-card__header">
+                        <span class="admin-order-card__id">#<%= order.id %></span>
+                        <select class="admin-order-card__status" data-order-id="<%= order.id %>" onchange="updateOrderStatus(this)">
                             <option value="pending" <%= (!order.status || order.status === 'pending') ? 'selected' : '' %>>Pending</option>
                             <option value="in_progress" <%= order.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
                             <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Completed</option>
                             <option value="archived" <%= order.status === 'archived' ? 'selected' : '' %>>Archived</option>
                         </select>
                     </div>
-                    <div class="order-card__content">
-                        <div class="order-info">
+                    <div class="admin-order-card__content">
+                        <div class="admin-order-card__info">
                             <p><strong>Customer:</strong> <%= order.fullName %></p>
                             <p><strong>Delivery:</strong> <%= new Date(order.deliveryDate).toLocaleDateString() %></p>
                             <p><strong>Unit:</strong> <%= order.unit %></p>
                         </div>
-                        <button class="btn btn-view" onclick="showMeasurements(<%= JSON.stringify(order) %>)">
+                        <button class="admin-btn admin-btn--view" onclick="showMeasurements(<%= JSON.stringify(order) %>)">
                             View Details
                         </button>
                     </div>
@@ -40,7 +41,7 @@
         </div>
 
         <!-- Desktop View (Table) -->
-        <div class="order-list desktop-only">
+        <div class="admin-orders__table">
             <table>
                 <thead>
                     <tr>
@@ -60,18 +61,18 @@
                             <td><%= new Date(order.deliveryDate).toLocaleDateString() %></td>
                             <td><%= order.unit %></td>
                             <td>
-                                <select class="status-select" data-order-id="<%= order.id %>" onchange="updateOrderStatus(this)">
+                                <select class="admin-order-card__status" data-order-id="<%= order.id %>" onchange="updateOrderStatus(this)">
                                     <option value="pending" <%= (!order.status || order.status === 'pending') ? 'selected' : '' %>>Pending</option>
                                     <option value="in_progress" <%= order.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
                                     <option value="completed" <%= order.status === 'completed' ? 'selected' : '' %>>Completed</option>
                                     <option value="archived" <%= order.status === 'archived' ? 'selected' : '' %>>Archived</option>
                                 </select>
-                                <span class="status-badge status-<%= order.status || 'pending' %>" data-order-id="<%= order.id %>">
+                                <span class="admin-status admin-status--<%= order.status || 'pending' %>" data-order-id="<%= order.id %>">
                                     <%= (order.status || 'pending').replace('_', ' ') %>
                                 </span>
                             </td>
                             <td class="action-buttons">
-                                <button class="btn btn-view" onclick="showMeasurements(<%= JSON.stringify(order) %>)">
+                                <button class="admin-btn admin-btn--view" onclick="showMeasurements(<%= JSON.stringify(order) %>)">
                                     View Details
                                 </button>
                             </td>
