@@ -302,16 +302,22 @@ function getOrdersByStatus(status) {
 const validationRules = {
     customer: {
         fullName: (val) => val && val.length >= 2 && val.length <= 100,
-        address: (val) => val && val.length >= 5 && val.length <= 200
+        address: (val) => val && val.length >= 5 && val.length <= 200,
+        deliveryDate: (val) => val && !isNaN(Date.parse(val))
     },
     measurements: {
-        inches: { min: 1, max: 120 }, // 10 feet in inches
-        cm: { min: 2.54, max: 304.8 } // 10 feet in centimeters
+        inches: { min: 1, max: 60 }, // More realistic max measurement
+        cm: { min: 2.54, max: 152.4 } // 60 inches in centimeters
     }
 };
 
 const validateCustomerDetails = (customer) => {
     const errors = [];
+    
+    if (!customer || typeof customer !== 'object') {
+        return ['Invalid customer data format'];
+    }
+
     Object.entries(validationRules.customer).forEach(([field, validator]) => {
         if (!validator(customer[field])) {
             errors.push(`Invalid ${field}`);
@@ -324,24 +330,46 @@ const validateMeasurements = (measurements, unit, type) => {
     const errors = [];
     const { min, max } = validationRules.measurements[unit];
 
-    Object.entries(measurements).forEach(([field, value]) => {
-        if (isNaN(value) || value < min || value > max) {
-            errors.push(`Invalid ${type} ${field}`);
+    if (!measurements || typeof measurements !== 'object') {
+        return [`Invalid ${type} measurements format`];
+    }
+
+    // Define required measurements for each type
+    const requiredFields = {
+        blouse: ['length', 'chest', 'waist', 'frontNeck', 'backNeck', 'shoulder', 'sleevesLength', 'sleevesRound', 'armHole'],
+        lehenga: ['length', 'waist']
+    };
+
+    // Check all required fields exist and are valid
+    requiredFields[type].forEach(field => {
+        const value = parseFloat(measurements[field]);
+        if (isNaN(value)) {
+            errors.push(`${type} ${field} is required`);
+        } else if (value < min || value > max) {
+            errors.push(`${type} ${field} must be between ${min} and ${max} ${unit}`);
         }
     });
+
     return errors;
 };
 
 const validateOrderData = (formData) => {
-    const customerErrors = validateCustomerDetails(formData.customer);
-    
-    if (!['inches', 'cm'].includes(formData.unit)) {
+    if (!formData || typeof formData !== 'object') {
         return {
             isValid: false,
-            errors: { message: 'Invalid measurement unit' }
+            errors: { message: 'Invalid form data format' }
         };
     }
 
+    // Validate unit first
+    if (!['inches', 'cm'].includes(formData.unit)) {
+        return {
+            isValid: false,
+            errors: { message: 'Invalid measurement unit. Must be either inches or cm' }
+        };
+    }
+
+    const customerErrors = validateCustomerDetails(formData.customer);
     const blouseErrors = validateMeasurements(formData.blouse, formData.unit, 'blouse');
     const lehengaErrors = validateMeasurements(formData.lehenga, formData.unit, 'lehenga');
 
@@ -353,7 +381,8 @@ const validateOrderData = (formData) => {
             message: 'Validation failed',
             errors: {
                 customer: customerErrors,
-                measurements: [...blouseErrors, ...lehengaErrors]
+                blouse: blouseErrors,
+                lehenga: lehengaErrors
             }
         } : null
     };

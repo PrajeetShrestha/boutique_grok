@@ -151,7 +151,7 @@ class MeasurementForm {
     }
 }
 
-// Initialize the form handler when the DOM is loaded
+// Initialize form handling when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new MeasurementForm();
 }); 

@@ -40,13 +40,16 @@ exports.postForm = [multerService.referenceImagesUpload.array('reference-images'
             const imagePaths = multerService.moveFilesToOrderDirectory(req.files, orderId);
             await dbService.updateOrderImages(orderId, imagePaths);
         }
-
+        console.log('Order created successfully:', orderId);
         // Return success response with redirect URL
         res.json({
             success: true,
             message: 'Order created successfully',
             redirectUrl: `/order-confirmation?id=${orderId}`
         });
+
+        // Log success message
+       
     } catch (error) {
         console.error('Error processing form:', error);
         res.status(500).json({ message: 'Internal server error' });
