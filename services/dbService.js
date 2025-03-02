@@ -13,7 +13,7 @@ const productsData = [
 function initializeDatabase() {
     return new Promise((resolve, reject) => {
         db.serialize(() => {
-            // Orders table with status field
+            // Orders table with updated schema
             db.run(`CREATE TABLE IF NOT EXISTS orders (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 fullName TEXT NOT NULL,
@@ -32,7 +32,10 @@ function initializeDatabase() {
                 lehengaLength REAL NOT NULL,
                 lehengaWaist REAL NOT NULL,
                 orderDate TEXT NOT NULL,
-                status TEXT DEFAULT 'pending'
+                status TEXT DEFAULT 'pending',
+                referenceImages TEXT,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`, (err) => {
                 if (err) {
                     console.error('Error creating orders table:', err.message);
@@ -235,32 +238,37 @@ function createOrder(orderData) {
     return new Promise((resolve, reject) => {
         const { customer, unit, blouse, lehenga, orderDate } = orderData;
         
-        db.run(
-            'INSERT INTO orders (fullName, address, deliveryDate, unit, blouseLength, chest, waist, frontNeck, backNeck, shoulder, sleevesLength, sleevesRound, armHole, lehengaLength, lehengaWaist, orderDate, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [
-                customer.fullName, 
-                customer.address, 
-                customer.deliveryDate, 
-                unit,
-                blouse.length,
-                blouse.chest,
-                blouse.waist,
-                blouse.frontNeck,
-                blouse.backNeck,
-                blouse.shoulder,
-                blouse.sleevesLength,
-                blouse.sleevesRound,
-                blouse.armHole,
-                lehenga.length,
-                lehenga.waist,
-                orderDate,
-                'pending'
-            ],
-            function(err) {
-                if (err) reject(err);
-                else resolve(this.lastID);
-            }
-        );
+        const sql = `INSERT INTO orders (
+            fullName, address, deliveryDate, unit, 
+            blouseLength, chest, waist, frontNeck, backNeck, 
+            shoulder, sleevesLength, sleevesRound, armHole, 
+            lehengaLength, lehengaWaist, orderDate, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        
+        const params = [
+            customer.fullName,
+            customer.address,
+            customer.deliveryDate,
+            unit,
+            blouse.length,
+            blouse.chest,
+            blouse.waist,
+            blouse.frontNeck,
+            blouse.backNeck,
+            blouse.shoulder,
+            blouse.sleevesLength,
+            blouse.sleevesRound,
+            blouse.armHole,
+            lehenga.length,
+            lehenga.waist,
+            orderDate,
+            'pending' // Default status for new orders
+        ];
+
+        db.run(sql, params, function(err) {
+            if (err) reject(err);
+            else resolve(this.lastID);
+        });
     });
 }
 
@@ -290,6 +298,77 @@ function getOrdersByStatus(status) {
     });
 }
 
+// Helper methods for order validation
+const validationRules = {
+    customer: {
+        fullName: (val) => val && val.length >= 2 && val.length <= 100,
+        address: (val) => val && val.length >= 5 && val.length <= 200
+    },
+    measurements: {
+        inches: { min: 1, max: 120 }, // 10 feet in inches
+        cm: { min: 2.54, max: 304.8 } // 10 feet in centimeters
+    }
+};
+
+const validateCustomerDetails = (customer) => {
+    const errors = [];
+    Object.entries(validationRules.customer).forEach(([field, validator]) => {
+        if (!validator(customer[field])) {
+            errors.push(`Invalid ${field}`);
+        }
+    });
+    return errors;
+};
+
+const validateMeasurements = (measurements, unit, type) => {
+    const errors = [];
+    const { min, max } = validationRules.measurements[unit];
+
+    Object.entries(measurements).forEach(([field, value]) => {
+        if (isNaN(value) || value < min || value > max) {
+            errors.push(`Invalid ${type} ${field}`);
+        }
+    });
+    return errors;
+};
+
+const validateOrderData = (formData) => {
+    const customerErrors = validateCustomerDetails(formData.customer);
+    
+    if (!['inches', 'cm'].includes(formData.unit)) {
+        return {
+            isValid: false,
+            errors: { message: 'Invalid measurement unit' }
+        };
+    }
+
+    const blouseErrors = validateMeasurements(formData.blouse, formData.unit, 'blouse');
+    const lehengaErrors = validateMeasurements(formData.lehenga, formData.unit, 'lehenga');
+
+    const hasErrors = customerErrors.length > 0 || blouseErrors.length > 0 || lehengaErrors.length > 0;
+
+    return {
+        isValid: !hasErrors,
+        errors: hasErrors ? {
+            message: 'Validation failed',
+            errors: {
+                customer: customerErrors,
+                measurements: [...blouseErrors, ...lehengaErrors]
+            }
+        } : null
+    };
+};
+
+const updateOrderImages = (orderId, imagePaths) => {
+    return new Promise((resolve, reject) => {
+        const sql = `UPDATE orders SET referenceImages = ? WHERE id = ?`;
+        db.run(sql, [JSON.stringify(imagePaths), orderId], (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
+};
+
 const dbService = {
     db,
     initializeDatabase,
@@ -302,12 +381,14 @@ const dbService = {
     getAllOrders,
     createOrder,
     updateOrderStatus,
-    getOrdersByStatus
+    getOrdersByStatus,
+    validateOrderData,
+    updateOrderImages
 };
 
 async function migrateDatabase() {
     try {
-        // Drop existing products table
+        // Products table migration
         await new Promise((resolve, reject) => {
             db.run('DROP TABLE IF EXISTS products', (err) => {
                 if (err) reject(err);
@@ -325,8 +406,102 @@ async function migrateDatabase() {
     }
 }
 
-// Export the migration function
+async function migrateOrdersTable() {
+    try {
+        // Backup existing orders
+        const orders = await new Promise((resolve, reject) => {
+            db.all('SELECT * FROM orders', [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        });
+
+        // Drop and recreate orders table with correct schema
+        await new Promise((resolve, reject) => {
+            db.run(`DROP TABLE IF EXISTS orders`, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        await new Promise((resolve, reject) => {
+            db.run(`CREATE TABLE orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fullName TEXT NOT NULL,
+                address TEXT NOT NULL,
+                deliveryDate TEXT NOT NULL,
+                unit TEXT NOT NULL,
+                blouseLength REAL NOT NULL,
+                chest REAL NOT NULL,
+                waist REAL NOT NULL,
+                frontNeck REAL NOT NULL,
+                backNeck REAL NOT NULL,
+                shoulder REAL NOT NULL,
+                sleevesLength REAL NOT NULL,
+                sleevesRound REAL NOT NULL,
+                armHole REAL NOT NULL,
+                lehengaLength REAL NOT NULL,
+                lehengaWaist REAL NOT NULL,
+                orderDate TEXT NOT NULL,
+                status TEXT DEFAULT 'pending',
+                referenceImages TEXT,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )`, (err) => {
+                if (err) reject(err);
+                else resolve();
+            });
+        });
+
+        // Restore backed up orders if any
+        if (orders && orders.length > 0) {
+            const insertSql = `INSERT INTO orders (
+                fullName, address, deliveryDate, unit,
+                blouseLength, chest, waist, frontNeck, backNeck,
+                shoulder, sleevesLength, sleevesRound, armHole,
+                lehengaLength, lehengaWaist, orderDate, status,
+                referenceImages
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+            for (const order of orders) {
+                await new Promise((resolve, reject) => {
+                    db.run(insertSql, [
+                        order.fullName,
+                        order.address,
+                        order.deliveryDate,
+                        order.unit,
+                        order.blouseLength,
+                        order.chest,
+                        order.waist,
+                        order.frontNeck,
+                        order.backNeck,
+                        order.shoulder,
+                        order.sleevesLength,
+                        order.sleevesRound,
+                        order.armHole,
+                        order.lehengaLength,
+                        order.lehengaWaist,
+                        order.orderDate,
+                        order.status || 'pending',
+                        order.referenceImages
+                    ], (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+            }
+        }
+
+        console.log('Orders table migration completed successfully');
+    } catch (error) {
+        console.error('Error during orders table migration:', error);
+        throw error;
+    }
+}
+
+// Export all functions
 module.exports = {
     ...dbService,
-    migrateDatabase
+    migrateDatabase,
+    migrateOrdersTable
 };

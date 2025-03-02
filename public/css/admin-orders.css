@@ -96,4 +96,47 @@
         background: #f8f9fa;
         font-weight: 500;
     }
+}
+
+.measurement-list p span:last-child {
+    font-weight: normal;
+}
+
+.reference-images-section {
+    margin-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.reference-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.reference-image {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.reference-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.reference-image img:hover {
+    transform: scale(1.05);
+}
+
+.no-images {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-dark);
+    font-style: italic;
 } 

@@ -185,25 +185,30 @@ if (document.getElementById('measurement-form')) {
 
             console.log('API Response status:', response.status);
             
+            const responseData = await response.json();
+            
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('API Error:', errorData);
-                let errorMsg = errorData.message || 'Unknown error';
-                if (errorData.errors) {
-                    const customerErrors = errorData.errors.customer?.join(', ') || '';
-                    const measurementErrors = errorData.errors.measurements?.join(', ') || '';
+                console.error('API Error:', responseData);
+                let errorMsg = responseData.message || 'Unknown error';
+                if (responseData.errors) {
+                    const customerErrors = responseData.errors.customer?.join(', ') || '';
+                    const measurementErrors = responseData.errors.measurements?.join(', ') || '';
                     errorMsg += `\nCustomer Errors: ${customerErrors || 'None'}\nMeasurement Errors: ${measurementErrors || 'None'}`;
                 }
                 throw new Error(errorMsg);
             }
 
-            const responseData = await response.json();
             console.log('API Success:', responseData);
 
+            // Store form data in localStorage
             formData = responseData.data;
             localStorage.setItem('formData', JSON.stringify(formData));
-            alert('Form submitted successfully! Use the buttons below to export your data.');
-            document.querySelector('.export-buttons').style.display = 'flex';
+
+            // Show success message and handle redirect
+            alert('Form submitted successfully!');
+            if (responseData.redirectUrl) {
+                window.location.href = responseData.redirectUrl;
+            }
         } catch (error) {
             console.error('Form submission error:', error);
             alert(`An error occurred while submitting the form: ${error.message}`);

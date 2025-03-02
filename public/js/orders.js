@@ -27,6 +27,32 @@ function showMeasurements(order) {
         <p><span>Waist:</span> <span>${order.lehengaWaist} ${order.unit}</span></p>
     `;
 
+    // Set reference images
+    const referenceImagesContainer = document.getElementById('reference-images');
+    referenceImagesContainer.innerHTML = '';
+    
+    if (order.referenceImages) {
+        const images = JSON.parse(order.referenceImages);
+        if (images && images.length > 0) {
+            images.forEach(imagePath => {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = 'reference-image';
+                
+                const img = document.createElement('img');
+                img.src = '/' + imagePath;
+                img.alt = 'Reference Image';
+                img.onclick = () => window.open(img.src, '_blank');
+                
+                imgWrapper.appendChild(img);
+                referenceImagesContainer.appendChild(imgWrapper);
+            });
+        } else {
+            referenceImagesContainer.innerHTML = '<p class="no-images">No reference images provided</p>';
+        }
+    } else {
+        referenceImagesContainer.innerHTML = '<p class="no-images">No reference images provided</p>';
+    }
+
     // Show modal
     modal.style.display = 'flex';
 }
