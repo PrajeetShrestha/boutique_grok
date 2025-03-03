@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Form Submission and Export Logic (Unchanged)
+/*
 if (document.getElementById('measurement-form')) {
     const form = document.getElementById('measurement-form');
     let formData = null;
@@ -315,3 +316,4 @@ Waist: ${formData.lehenga.waist}
         doc.save(`Order_${formData.customer.fullName}_${formData.orderDate.replace(/[, :]/g, '_')}.pdf`);
     });
 }
+    */

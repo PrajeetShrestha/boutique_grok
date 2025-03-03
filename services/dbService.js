@@ -227,7 +227,7 @@ function deleteProduct(id) {
 // Order-related operations
 function getAllOrders() {
     return new Promise((resolve, reject) => {
-        db.all('SELECT * FROM orders ORDER BY orderDate DESC', [], (err, rows) => {
+        db.all('SELECT * FROM orders ORDER BY createdAt DESC', [], (err, rows) => {
             if (err) reject(err);
             else resolve(rows);
         });

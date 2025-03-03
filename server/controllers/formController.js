@@ -11,19 +11,26 @@ exports.getForm = (req, res) => {
 
 exports.postForm = [multerService.referenceImagesUpload.array('reference-images'), async (req, res) => {
     console.log('Form submission received:', req.body);
-    
+    let data = req.body;
+// Check if data is a string and parse it if necessary
+if (typeof data === 'string') {
+    data = JSON.parse(data);
+} else if (typeof data === 'object' && data.data) {
+    // Handle case where data is sent as a nested JSON string
+    data = JSON.parse(data.data);
+}
     try {
         // Parse form data
         const formData = {
             customer: {
-                fullName: req.body.customer.fullName,
-                address: req.body.customer.address,
-                deliveryDate: req.body.customer.deliveryDate
+                fullName: data.customer.fullName,
+                address: data.customer.address,
+                deliveryDate: data.customer.deliveryDate
             },
-            blouse: req.body.blouse,
-            lehenga: req.body.lehenga,
-            unit: req.body.unit,
-            orderDate: req.body.orderDate
+            blouse: data.blouse,
+            lehenga: data.lehenga,
+            unit: data.unit,
+            orderDate: data.orderDate
         };
 
         // Validate order data
