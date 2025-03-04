@@ -8,7 +8,6 @@ class MeasurementForm {
         this.referenceImagesInput = document.getElementById('reference-images');
         this.referenceImagesPreview = document.querySelector('.reference-images-preview');
         this.deliveryDateInput = document.getElementById('delivery-date');
-        this.exportButtons = document.querySelector('.export-buttons');
         this.formData = null;
 
         this.initializeEventListeners();
@@ -35,7 +34,6 @@ class MeasurementForm {
                 const parsedData = JSON.parse(savedData);
                 if (parsedData && Object.keys(parsedData).length > 0) {
                     this.formData = parsedData;
-                    this.exportButtons.style.display = 'flex';
                     this.populateFormFields();
                 } else {
                     console.warn('Saved data is an empty object.');
@@ -221,10 +219,10 @@ class MeasurementForm {
                 throw new Error(errorMsg);
             }
 
-            // Store form data and show export buttons
+            // Store form data 
             this.formData = result.data || formData;
             localStorage.setItem('formData', JSON.stringify(this.formData));
-            this.exportButtons.style.display = 'flex';
+            
 
             // Handle success
             alert('Form submitted successfully!');

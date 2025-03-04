@@ -398,6 +398,24 @@ const updateOrderImages = (orderId, imagePaths) => {
     });
 };
 
+function getUniqueColors() {
+    return new Promise((resolve, reject) => {
+        db.all('SELECT DISTINCT color FROM products ORDER BY color', [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows.map(row => row.color));
+        });
+    });
+}
+
+function getUniqueFabrics() {
+    return new Promise((resolve, reject) => {
+        db.all('SELECT DISTINCT fabric FROM products ORDER BY fabric', [], (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows.map(row => row.fabric));
+        });
+    });
+}
+
 const dbService = {
     db,
     initializeDatabase,
@@ -412,7 +430,9 @@ const dbService = {
     updateOrderStatus,
     getOrdersByStatus,
     validateOrderData,
-    updateOrderImages
+    updateOrderImages,
+    getUniqueColors,
+    getUniqueFabrics
 };
 
 async function migrateDatabase() {

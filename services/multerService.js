@@ -98,9 +98,12 @@ const productImagesUpload = multer({
     }),
     fileFilter: fileFilter(['image/jpeg', 'image/png', 'image/gif']),
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB
+        fileSize: 20 * 1024 * 1024 // 20MB
     }
-});
+}).fields([
+    { name: 'primaryImg', maxCount: 1 },
+    { name: 'images', maxCount: 3 }
+]);
 
 // Create a custom upload configuration
 const createCustomUpload = (options) => {

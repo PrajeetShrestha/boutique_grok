@@ -1,5 +1,7 @@
 const dbService = require('../../services/dbService');
-
+const multerService = require('../../services/multerService');
+const fs = require('fs');
+const path = require('path');
 const adminController = {
     // Get all products for admin dashboard
     getAdminDashboard: async (req, res) => {
@@ -16,11 +18,28 @@ const adminController = {
     },
 
     // Show add product form
-    getAddProduct: (req, res) => {
-        res.render('admin/add', {
-            error: null,
-            currentRoute: '/admin/add'
-        });
+    getAddProduct: async (req, res) => {
+        try {
+            const [colors, fabrics] = await Promise.all([
+                dbService.getUniqueColors(),
+                dbService.getUniqueFabrics()
+            ]);
+            
+            res.render('admin/add', {
+                error: null,
+                currentRoute: '/admin/add',
+                colors,
+                fabrics
+            });
+        } catch (error) {
+            console.error('Error fetching unique values:', error);
+            res.render('admin/add', {
+                error: null,
+                currentRoute: '/admin/add',
+                colors: [],
+                fabrics: []
+            });
+        }
     },
 
     // Handle add product form submission
@@ -33,12 +52,12 @@ const adminController = {
                 throw new Error('Primary image is required');
             }
 
-            // Ensure paths start with /
-            const primaryImg = req.files.primaryImg[0].filename;
-            const primaryImgPath = primaryImg.startsWith('/') ? primaryImg : '/uploads/' + primaryImg;
+            // Handle primary image
+            const primaryImgPath = '/uploads/products/' + req.files.primaryImg[0].filename;
             
+            // Handle additional images
             const additionalImages = req.files.images 
-                ? req.files.images.map(file => '/uploads/' + file.filename)
+                ? req.files.images.map(file => '/uploads/products/' + file.filename)
                 : [];
 
             await dbService.createProduct(
@@ -54,6 +73,16 @@ const adminController = {
             res.redirect('/admin');
         } catch (error) {
             console.error('Error adding product:', error);
+            // Clean up uploaded files if there was an error
+            if (req.files) {
+                Object.values(req.files).flat().forEach(file => {
+                    try {
+                        fs.unlinkSync(file.path);
+                    } catch (unlinkError) {
+                        console.error('Error deleting file:', unlinkError);
+                    }
+                });
+            }
             res.render('admin/add', {
                 error: error.message || 'Failed to add product',
                 currentRoute: '/admin/add'
@@ -64,7 +93,12 @@ const adminController = {
     // Show edit product form
     getEditProduct: async (req, res) => {
         try {
-            const product = await dbService.getProductById(req.params.id);
+            const [product, colors, fabrics] = await Promise.all([
+                dbService.getProductById(req.params.id),
+                dbService.getUniqueColors(),
+                dbService.getUniqueFabrics()
+            ]);
+
             if (!product) {
                 return res.status(404).render('404', { currentRoute: '/admin' });
             }
@@ -75,7 +109,9 @@ const adminController = {
             res.render('admin/edit', {
                 product,
                 error: null,
-                currentRoute: '/admin/edit'
+                currentRoute: '/admin/edit',
+                colors,
+                fabrics
             });
         } catch (error) {
             console.error('Error fetching product:', error);
@@ -88,18 +124,60 @@ const adminController = {
         try {
             const { id } = req.params;
             const { name, price, color, fabric, description } = req.body;
-            const primaryImg = req.files?.primaryImg?.[0]?.path;
-            const additionalImages = req.files?.images?.map(file => file.path);
+            
+            // Get existing product to handle image cleanup
+            const existingProduct = await dbService.getProductById(id);
+            if (!existingProduct) {
+                throw new Error('Product not found');
+            }
+
+            // Handle primary image
+            let primaryImgPath = existingProduct.primaryImg;
+            if (req.files?.primaryImg?.[0]) {
+                // Delete old primary image
+                const oldPrimaryImgPath = path.join(__dirname, '../../public', existingProduct.primaryImg);
+                try {
+                    fs.unlinkSync(oldPrimaryImgPath);
+                } catch (error) {
+                    console.error('Error deleting old primary image:', error);
+                }
+                primaryImgPath = '/uploads/products/' + req.files.primaryImg[0].filename;
+            }
+
+            // Handle additional images
+            let additionalImages = existingProduct.images ? JSON.parse(existingProduct.images) : [];
+            
+            // Handle existing images that were unchecked
             const existingImages = Array.isArray(req.body.existingImages) 
                 ? req.body.existingImages 
                 : [req.body.existingImages].filter(Boolean);
+            
+            // Delete unchecked images
+            additionalImages.forEach(img => {
+                if (!existingImages.includes(img)) {
+                    const imgPath = path.join(__dirname, '../../public', img);
+                    try {
+                        fs.unlinkSync(imgPath);
+                    } catch (error) {
+                        console.error('Error deleting old image:', error);
+                    }
+                }
+            });
+
+            // Add new images
+            if (req.files?.images) {
+                const newImages = req.files.images.map(file => '/uploads/products/' + file.filename);
+                additionalImages = [...existingImages, ...newImages];
+            } else {
+                additionalImages = existingImages;
+            }
 
             await dbService.updateProduct(
                 id,
                 name,
                 parseFloat(price),
-                primaryImg,
-                [...(additionalImages || []), ...(existingImages || [])],
+                primaryImgPath,
+                additionalImages,
                 color,
                 fabric,
                 description
@@ -108,9 +186,19 @@ const adminController = {
             res.redirect('/admin');
         } catch (error) {
             console.error('Error updating product:', error);
+            // Clean up newly uploaded files if there was an error
+            if (req.files) {
+                Object.values(req.files).flat().forEach(file => {
+                    try {
+                        fs.unlinkSync(file.path);
+                    } catch (unlinkError) {
+                        console.error('Error deleting file:', unlinkError);
+                    }
+                });
+            }
             res.render('admin/edit', {
                 product: { ...req.body, id: req.params.id },
-                error: 'Failed to update product',
+                error: error.message || 'Failed to update product',
                 currentRoute: '/admin/edit'
             });
         }

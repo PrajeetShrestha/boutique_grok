@@ -43,11 +43,29 @@
             </div>
             <div class="form-group">
                 <label for="color">Color:</label>
-                <input type="text" id="color" name="color" value="<%= product.color %>" required>
+                <div class="chip-input-container">
+                    <input type="text" id="color" name="color" value="<%= product.color %>" required>
+                    <div class="chip-container">
+                        <% colors.forEach(color => { %>
+                            <div class="chip <%= product.color.split(',').map(c => c.trim()).includes(color) ? 'selected' : '' %>" 
+                                 data-value="<%= color %>"><%= color %></div>
+                        <% }) %>
+                    </div>
+                    <div class="selected-chips" id="selected-colors"></div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="fabric">Fabric:</label>
-                <input type="text" id="fabric" name="fabric" value="<%= product.fabric %>" required>
+                <div class="chip-input-container">
+                    <input type="text" id="fabric" name="fabric" value="<%= product.fabric %>" required>
+                    <div class="chip-container">
+                        <% fabrics.forEach(fabric => { %>
+                            <div class="chip <%= product.fabric.split(',').map(f => f.trim()).includes(fabric) ? 'selected' : '' %>" 
+                                 data-value="<%= fabric %>"><%= fabric %></div>
+                        <% }) %>
+                    </div>
+                    <div class="selected-chips" id="selected-fabrics"></div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="description">Description:</label>
@@ -59,3 +77,94 @@
     </section>
 </main>
 <%- include('../partials/footer') %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const colorInput = document.getElementById('color');
+    const fabricInput = document.getElementById('fabric');
+    const selectedColors = document.getElementById('selected-colors');
+    const selectedFabrics = document.getElementById('selected-fabrics');
+    const selectedColorValues = new Set(colorInput.value.split(',').map(c => c.trim()).filter(Boolean));
+    const selectedFabricValues = new Set(fabricInput.value.split(',').map(f => f.trim()).filter(Boolean));
+
+    // Initialize selected chips
+    updateSelectedColors();
+    updateSelectedFabrics();
+
+    // Handle color chip selection
+    document.querySelectorAll('.chip[data-value]').forEach(chip => {
+        chip.addEventListener('click', function() {
+            const value = this.dataset.value;
+            if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
+                selectedColorValues.delete(value);
+                updateSelectedColors();
+            } else {
+                this.classList.add('selected');
+                selectedColorValues.add(value);
+                updateSelectedColors();
+            }
+        });
+    });
+
+    // Handle fabric chip selection
+    document.querySelectorAll('.chip[data-value]').forEach(chip => {
+        chip.addEventListener('click', function() {
+            const value = this.dataset.value;
+            if (this.classList.contains('selected')) {
+                this.classList.remove('selected');
+                selectedFabricValues.delete(value);
+                updateSelectedFabrics();
+            } else {
+                this.classList.add('selected');
+                selectedFabricValues.add(value);
+                updateSelectedFabrics();
+            }
+        });
+    });
+
+    // Update selected colors display
+    function updateSelectedColors() {
+        selectedColors.innerHTML = '';
+        selectedColorValues.forEach(value => {
+            const chip = document.createElement('div');
+            chip.className = 'selected-chip';
+            chip.innerHTML = `
+                ${value}
+                <button type="button" onclick="removeColor('${value}')">&times;</button>
+            `;
+            selectedColors.appendChild(chip);
+        });
+        colorInput.value = Array.from(selectedColorValues).join(', ');
+    }
+
+    // Update selected fabrics display
+    function updateSelectedFabrics() {
+        selectedFabrics.innerHTML = '';
+        selectedFabricValues.forEach(value => {
+            const chip = document.createElement('div');
+            chip.className = 'selected-chip';
+            chip.innerHTML = `
+                ${value}
+                <button type="button" onclick="removeFabric('${value}')">&times;</button>
+            `;
+            selectedFabrics.appendChild(chip);
+        });
+        fabricInput.value = Array.from(selectedFabricValues).join(', ');
+    }
+
+    // Remove color chip
+    window.removeColor = function(value) {
+        selectedColorValues.delete(value);
+        document.querySelector(`.chip[data-value="${value}"]`).classList.remove('selected');
+        updateSelectedColors();
+    };
+
+    // Remove fabric chip
+    window.removeFabric = function(value) {
+        selectedFabricValues.delete(value);
+        document.querySelector(`.chip[data-value="${value}"]`).classList.remove('selected');
+        updateSelectedFabrics();
+    };
+});
+</script>
