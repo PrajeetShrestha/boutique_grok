@@ -25,18 +25,26 @@ class MeasurementForm {
         this.unitRadios.forEach(radio => {
             radio.addEventListener('change', () => this.updateMeasurementLimits());
         });
-
-        // Export button listeners
-        document.getElementById('export-email')?.addEventListener('click', () => this.exportToEmail());
-        document.getElementById('export-pdf')?.addEventListener('click', () => this.exportToPDF());
     }
 
     loadSavedFormData() {
         const savedData = localStorage.getItem('formData');
+        console.log(savedData);
         if (savedData) {
-            this.formData = JSON.parse(savedData);
-            this.exportButtons.style.display = 'flex';
-            this.populateFormFields();
+            try {
+                const parsedData = JSON.parse(savedData);
+                if (parsedData && Object.keys(parsedData).length > 0) {
+                    this.formData = parsedData;
+                    this.exportButtons.style.display = 'flex';
+                    this.populateFormFields();
+                } else {
+                    console.warn('Saved data is an empty object.');
+                }
+            } catch (error) {
+                console.error('Error parsing saved data:', error);
+            }
+        } else {
+            console.warn('No saved data found.');
         }
     }
 
@@ -230,119 +238,7 @@ class MeasurementForm {
         }
     }
 
-    exportToEmail() {
-        if (!this.formData) {
-            alert('Please submit the form first!');
-            return;
-        }
-
-        const textContent = `
-Boutique Order Details
-----------------------------------------
-Customer Information
-----------------------------------------
-Full Name: ${this.formData.customer.fullName}
-Address:
-${this.formData.customer.address}
-Delivery Date: ${this.formData.customer.deliveryDate}
-Order Date: ${this.formData.orderDate}
-Measurements (${this.formData.unit})
-----------------------------------------
-Blouse
-----------------------------------------
-Length: ${this.formData.blouse.length}
-Chest: ${this.formData.blouse.chest}
-Waist: ${this.formData.blouse.waist}
-Front Neck Depth: ${this.formData.blouse.frontNeck}
-Back Neck Depth: ${this.formData.blouse.backNeck}
-Shoulder Width: ${this.formData.blouse.shoulder}
-Sleeves Length: ${this.formData.blouse.sleevesLength}
-Sleeves Round: ${this.formData.blouse.sleevesRound}
-Arm Hole: ${this.formData.blouse.armHole}
-Lehenga
-----------------------------------------
-Length: ${this.formData.lehenga.length}
-Waist: ${this.formData.lehenga.waist}
-----------------------------------------
-© 2025 Boutique
-        `;
-
-        const subject = encodeURIComponent(`Order Measurements for ${this.formData.customer.fullName}`);
-        const body = encodeURIComponent(textContent);
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    }
-
-    exportToPDF() {
-        if (!this.formData) {
-            alert('Please submit the form first!');
-            return;
-        }
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.setFontSize(18);
-        doc.setTextColor(51, 51, 51);
-        doc.text('Boutique Order Details', 105, 15, { align: 'center' });
-        doc.setLineWidth(0.5);
-        doc.line(10, 20, 200, 20);
-
-        doc.setFontSize(14);
-        doc.setTextColor(85, 85, 85);
-        doc.text('Customer Information', 10, 30);
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Full Name: ${this.formData.customer.fullName}`, 10, 40);
-        doc.text('Address:', 10, 50);
-        doc.text(this.formData.customer.address, 10, 55, { maxWidth: 180 });
-        let yOffset = 55 + Math.ceil(this.formData.customer.address.length / 90) * 5;
-        doc.text(`Delivery Date: ${this.formData.customer.deliveryDate}`, 10, yOffset + 10);
-        doc.text(`Order Date: ${this.formData.orderDate}`, 10, yOffset + 20);
-
-        yOffset += 30;
-        doc.setFontSize(14);
-        doc.setTextColor(85, 85, 85);
-        doc.text(`Measurements (${this.formData.unit})`, 10, yOffset);
-        
-        // Blouse measurements
-        doc.setFontSize(12);
-        doc.setTextColor(119, 119, 119);
-        doc.text('Blouse', 10, yOffset + 10);
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        const blouseMeasurements = [
-            ['Length', this.formData.blouse.length],
-            ['Chest', this.formData.blouse.chest],
-            ['Waist', this.formData.blouse.waist],
-            ['Front Neck Depth', this.formData.blouse.frontNeck],
-            ['Back Neck Depth', this.formData.blouse.backNeck],
-            ['Shoulder Width', this.formData.blouse.shoulder],
-            ['Sleeves Length', this.formData.blouse.sleevesLength],
-            ['Sleeves Round', this.formData.blouse.sleevesRound],
-            ['Arm Hole', this.formData.blouse.armHole]
-        ];
-
-        blouseMeasurements.forEach((measurement, index) => {
-            doc.text(`${measurement[0]}: ${measurement[1]}`, 10, yOffset + 20 + (index * 10));
-        });
-
-        // Lehenga measurements
-        yOffset += 110;
-        doc.setFontSize(12);
-        doc.setTextColor(119, 119, 119);
-        doc.text('Lehenga', 10, yOffset);
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Length: ${this.formData.lehenga.length}`, 10, yOffset + 10);
-        doc.text(`Waist: ${this.formData.lehenga.waist}`, 10, yOffset + 20);
-
-        // Footer
-        doc.setFontSize(8);
-        doc.setTextColor(119, 119, 119);
-        doc.text('© 2025 Boutique', 105, 290, { align: 'center' });
-
-        doc.save(`Order_${this.formData.customer.fullName}_${this.formData.orderDate.replace(/[, :]/g, '_')}.pdf`);
-    }
+    
 }
 
 // Initialize the form handler when the DOM is loaded
