@@ -9,7 +9,8 @@
     "dev": "nodemon server/server.js",
     "migrate": "node scripts/migrate.js",
     "migrate:all": "node scripts/migrate.js --with-products",
-    "test:form": "node scripts/test-form.js"
+    "test:form": "node scripts/test-form.js",
+    "clear:db": "node services/cleardb.js"
   },
   "keywords": [],
   "author": "",

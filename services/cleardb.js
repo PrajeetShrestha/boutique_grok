@@ -31,6 +31,6 @@ function deleteAllDataFromTable(tableName) {
 }
 
 // Specify the table name you want to delete data from
-const tableName = 'orders'; // Change this to your table name
+const tableName = 'products'; // Change this to your table name
 
 deleteAllDataFromTable(tableName);
